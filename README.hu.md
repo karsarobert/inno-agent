@@ -1,6 +1,6 @@
 # Inno Agent
 
-[English](README.md) | [Magyar](README.hu.md)
+[Magyar](README.md) | [English](README.en.md)
 
 > Nyílt forráskódú **személyes tanulási ügynök** rétegzett memóriarendszerrel, proaktív ütemezővel, többcsatornás üzenetküldéssel és munkaterülethez kötött Gyakorlólaborral — a [Pi coding-agent SDK](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) alapjain, **annak kerneljének módosítása nélkül**.
 

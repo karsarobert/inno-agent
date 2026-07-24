@@ -1,71 +1,71 @@
 # Inno Agent
 
-[English](README.md) | [Magyar](README.hu.md)
+[Magyar](README.md) | [English](README.en.md)
 
-> An open-source **personal learning agent** with a layered memory system, a proactive scheduler, multi-channel messaging, and a workspace-scoped Practice Lab — built on the [Pi coding-agent SDK](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) **without modifying its kernel**.
+> Nyílt forráskódú **személyes tanulási ügynök** rétegzett memóriarendszerrel, proaktív ütemezővel, többcsatornás üzenetküldéssel és munkaterülethez kötött Gyakorlólaborral — a [Pi coding-agent SDK](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) alapjain, **annak kerneljének módosítása nélkül**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D20.6.0-brightgreen.svg)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ESM-3178c6.svg)](https://www.typescriptlang.org/)
 [![Website](https://img.shields.io/badge/Website-Inno%20Agent-ff6b35.svg)](https://hhyqhh.github.io/inno-agent-website/)
 
-> 🌐 **Homepage:** [https://hhyqhh.github.io/inno-agent-website/](https://hhyqhh.github.io/inno-agent-website/) - project overview, feature walkthrough, and live demos.
+> 🌐 **Honlap:** [https://hhyqhh.github.io/inno-agent-website/](https://hhyqhh.github.io/inno-agent-website/) - projektáttekintés, funkcióbemutató és élő demók.
 
-> 📄 **Technical Report:** [*Inno Agent: An Open-Source Personal Learning Agent with Layered Memory, Educational Post-Training, and Local Deployment*](./docs/inno-agent.pdf) (arXiv, June 2026) — covers the system design, three-layer memory architecture, instructional-design grounding, and preliminary educational post-training results on Qwen3.6 35B.
+> 📄 **Műszaki jelentés:** [*Inno Agent: An Open-Source Personal Learning Agent with Layered Memory, Educational Post-Training, and Local Deployment*](./docs/inno-agent.pdf) (arXiv, 2026. június) — ismerteti a rendszertervet, a háromrétegű memóriaarchitektúrát, az oktatástervezési megalapozást, valamint a Qwen3.6 35B modellen végzett előzetes oktatási utótanítási eredményeket.
 >
-> 📦 **Resource Hub:** [Chloris-Blaxk/inno-agent-hub](https://github.com/Chloris-Blaxk/inno-agent-hub) — the companion repository containing the skill library, workspace preset templates, and community-contributed resources for Inno Agent.
+> 📦 **Erőforrásközpont:** [Chloris-Blaxk/inno-agent-hub](https://github.com/Chloris-Blaxk/inno-agent-hub) — az Inno Agent kiegészítő tárháza, amely a készségtárat, munkaterületi előbeállítás-sablonokat és a közösség által hozzájárult erőforrásokat tartalmazza.
 
 <p align="center">
-  <img src="./docs/assets/l2-wiki.png" alt="Inno Agent — L2 wiki knowledge base and graph" width="100%" />
+  <img src="./docs/assets/l2-wiki.png" alt="Inno Agent — L2 wiki tudásbázis és gráf" width="100%" />
 </p>
 
-Inno Agent is a single-learner companion that organizes long-term learning support into three explicit memory layers — an **L1 learner profile**, an **L2 native wiki knowledge base**, and **L3 session records with cross-conversation retrieval** — and wraps them with a learning loop: a cron scheduler, personal IM channels (Feishu / WeChat), and a Practice Lab with an in-browser terminal.
+Az Inno Agent egyetlen tanulót támogató társ, amely a hosszú távú tanulási támogatást három elkülönített memóriarétegbe szervezi — egy **L1 tanulói profilba**, egy **L2 natív wiki tudásbázisba**, valamint **L3 munkamenet-rekordokba beszélgetések közötti visszakereséssel** —, és mindezt egy tanulási ciklussal egészíti ki: cron ütemezővel, személyes IM-csatornákkal (Feishu / WeChat), továbbá böngészőbeli terminállal rendelkező Gyakorlólaborral.
 
-It ships in two forms that share the same `runtime/` and `workspace/` state:
+Két formában érhető el, amelyek ugyanazt a `runtime/` és `workspace/` állapotot használják:
 
-- **Terminal CLI** (`inno`) — a pure TUI agent, no HTTP.
-- **Web UI** (React 19 + Lit + Tailwind 4) — backed by a Node HTTP server with SSE streaming, terminal sessions, a workspace browser, the wiki graph, jobs, skills, and settings.
-
----
-
-## Why Inno Agent
-
-General-purpose coding agents are optimized for open-ended, context-heavy software engineering, which pushes them toward the largest models and longest context windows. Education is a different optimization target: the tasks are more structured, and the value lies in **personalized explanation, misconception diagnosis, exercise generation, feedback, review scheduling, privacy, and low-latency continuous interaction**.
-
-Inno Agent takes a different stance:
-
-- **Layered memory, not a flat chat summary.** Learner state, archived knowledge, and recent dialogue have different lifecycles, so each lives in its own layer with explicit boundaries enforced in the system prompt and storage layout.
-- **Durable facts go to tools, not replies.** Anything that affects future teaching is written to L1/L2 via tools, so personalization decisions are evidence-driven and traceable.
-- **An open, correctable learner model.** The L1 profile is inspectable and editable by the learner; the system prompt forbids unevidenced labels.
-- **The SDK kernel is never modified.** All learning behavior is added through registered tools and a single extension hook (`createInnoExtension`), so the agent runtime stays upstream-compatible.
+- **Terminálos CLI** (`inno`) — tisztán TUI-alapú ügynök, HTTP nélkül.
+- **Webes felület** (React 19 + Lit + Tailwind 4) — Node HTTP-szerver támogatja SSE-streameléssel, terminálmunkamenetekkel, munkaterület-böngészővel, wiki gráffal, feladatokkal, készségekkel és beállításokkal.
 
 ---
 
-## Features
+## Miért az Inno Agent?
 
-- 🧠 **Three-layer memory**
-  - **L1 — Learner profile**: goals, knowledge states, misconceptions, and preferences, updated from structured learning events and summarized into a short context pack injected before each turn.
-  - **L2 — Native wiki**: human-readable, agent-queryable pages (sources, concepts, entities, analysis) with LLM-assisted summarization, entity/concept linking, and PDF/Office/image ingestion.
-  - **L3 — Session records + cross-conversation retrieval**: Pi-SDK session history, indexed into SQLite with threshold-gated lexical recall so relevant past conversations can be surfaced across sessions.
-- ⏰ **Proactive scheduler** — cron-driven background jobs created in natural language, runnable from the agent, the UI, or the cron daemon.
-- 💬 **Personal IM channels** — Feishu (native) plus WeChat (bridge mode), with a unified dispatcher that pushes reminders back out.
-- 🧪 **Practice Lab** — a workspace-scoped web terminal (xterm.js over WebSocket) with run records the agent can read.
-- 🔌 **Pluggable providers** — any `openai-completions` or `anthropic-messages` endpoint (Anthropic, OpenAI, DeepSeek, Ollama, or a local model); switch models live in the UI.
-- 🖥️ **CLI and Web UI** — same runtime, same memory, same skills.
-- 🛡️ **Optional OS-level sandbox** — gate the agent's bash and file operations via [pi-sandbox](https://github.com/carderne/pi-sandbox).
+Az általános célú kódoló ügynököket nyílt végű, nagy kontextusigényű szoftverfejlesztésre optimalizálják, ami a legnagyobb modellek és a leghosszabb kontextusablakok irányába tereli őket. Az oktatás eltérő optimalizálási cél: a feladatok strukturáltabbak, az értéket pedig a **személyre szabott magyarázat, a tévképzetek diagnosztizálása, a feladatgenerálás, a visszajelzés, az ismétlés ütemezése, az adatvédelem és az alacsony késleltetésű, folyamatos interakció** jelenti.
+
+Az Inno Agent más megközelítést alkalmaz:
+
+- **Rétegzett memória, nem lapos beszélgetési összefoglaló.** A tanulói állapot, az archivált tudás és a közelmúltbeli párbeszéd életciklusa eltérő, ezért mindegyik külön rétegben kap helyet; a rendszerprompt és a tárolási elrendezés kifejezett határokat érvényesít.
+- **A tartós tények eszközökbe kerülnek, nem válaszokba.** Minden, ami a jövőbeli tanítást befolyásolja, eszközökön keresztül íródik L1/L2-be, így a személyre szabási döntések bizonyítékokon alapulnak és nyomon követhetők.
+- **Nyílt, javítható tanulói modell.** Az L1 profil a tanuló által megtekinthető és szerkeszthető; a rendszerprompt tiltja a bizonyíték nélküli címkéket.
+- **Az SDK kernelje soha nem módosul.** Minden tanulási viselkedés regisztrált eszközökön és egyetlen kiterjesztési horgon (`createInnoExtension`) keresztül adódik hozzá, így az ügynök futtatókörnyezete kompatibilis marad az upstreammel.
 
 ---
 
-## Requirements
+## Funkciók
 
-- **Node.js >= 20.6.0** (cross-conversation L3 retrieval uses the built-in `node:sqlite`, available on Node 22.5+; on older runtimes L3 recall degrades gracefully and the rest of the agent runs normally).
-- **npm** (workspaces are used; no extra package manager required).
+- 🧠 **Háromrétegű memória**
+  - **L1 — Tanulói profil**: célok, tudásállapotok, tévképzetek és preferenciák; strukturált tanulási eseményekből frissül, majd minden kör előtt rövid, befecskendezett kontextuscsomaggá lesz összefoglalva.
+  - **L2 — Natív wiki**: ember által olvasható, ügynök által lekérdezhető oldalak (források, fogalmak, entitások, elemzések), LLM-támogatott összegzéssel, entitás-/fogalom-összekapcsolással, valamint PDF/Office/kép betöltésével.
+  - **L3 — Munkamenet-rekordok + beszélgetések közötti visszakeresés**: Pi-SDK munkamenetelőzmény, SQLite-ba indexelve küszöbérték-vezérelt lexikai felidézéssel, hogy a releváns korábbi beszélgetések munkamenetek között is előhívhatók legyenek.
+- ⏰ **Proaktív ütemező** — cron által vezérelt, természetes nyelven létrehozott háttérfeladatok; az ügynökből, a felületből vagy a cron démonból futtathatók.
+- 💬 **Személyes IM-csatornák** — Feishu (natív) és WeChat (bridge módban), egységes diszpécserrel, amely visszaküldi az emlékeztetőket.
+- 🧪 **Gyakorlólabor** — munkaterülethez kötött webes terminál (xterm.js WebSocketen keresztül), az ügynök által olvasható futtatási rekordokkal.
+- 🔌 **Csatlakoztatható szolgáltatók** — bármely `openai-completions` vagy `anthropic-messages` végpont (Anthropic, OpenAI, DeepSeek, Ollama vagy helyi modell); a modellek élőben válthatók a felületen.
+- 🖥️ **CLI és webes felület** — azonos futtatókörnyezet, azonos memória, azonos készségek.
+- 🛡️ **Opcionális operációsrendszer-szintű sandbox** — az ügynök bash- és fájlműveleteinek korlátozása a [pi-sandbox](https://github.com/carderne/pi-sandbox) segítségével.
 
 ---
 
-## Quick Start
+## Követelmények
 
-New here? Start with **[QUICKSTART.md](./QUICKSTART.md)** (5 minutes). The short version:
+- **Node.js >= 20.6.0** (a beszélgetések közötti L3-visszakeresés a beépített `node:sqlite` modult használja, amely Node 22.5+-tól érhető el; régebbi futtatókörnyezeteken az L3 felidézés fokozatosan korlátozott, az ügynök többi része azonban rendesen fut).
+- **npm** (munkaterületeket használ; nincs szükség további csomagkezelőre).
+
+---
+
+## Gyors kezdés
+
+Most ismerkedik vele? Kezdje a **[QUICKSTART.md](./QUICKSTART.md)** dokumentummal (5 perc). Röviden:
 
 ```bash
 git clone https://github.com/hhyqhh/inno-agent.git
@@ -81,54 +81,54 @@ cp config.example.json runtime/config/config.json
 npm run server -- --home ./runtime --workspace ./workspace --port 3000
 ```
 
-Open **http://localhost:3000**.
+Nyissa meg a **http://localhost:3000** címet.
 
 ---
 
-## Use Cases
+## Felhasználási esetek
 
-Real-world usage guides live in [`docs/use-cases/`](https://github.com/hhyqhh/inno-agent/tree/main/docs/use-cases).
+A valós használati útmutatók a [`docs/use-cases/`](https://github.com/hhyqhh/inno-agent/tree/main/docs/use-cases) könyvtárban találhatók.
 
-| Guide | Description |
+| Útmutató | Leírás |
 |---|---|
-| [Skill Tutorial — Building a Workspace Agent](./docs/use-cases/skill-tutorial.md) | Use `agent.md` and `.skills/` to build a custom learning agent scoped to a workspace, with a concrete English study example |
+| [Skill Tutorial — Building a Workspace Agent](./docs/use-cases/skill-tutorial.md) | Az `agent.md` és a `.skills/` használatával egy munkaterülethez kötött egyéni tanulási ügynök építése, konkrét angolnyelv-tanulási példával |
 
 ---
 
-## Run Modes
+## Futtatási módok
 
-**Web UI** (serves the API and the built frontend):
+**Webes felület** (kiszolgálja az API-t és a lefordított frontendet):
 
 ```bash
 npm run server -- --home ./runtime --workspace ./workspace --port 3000
 ```
 
-**CLI** (terminal agent, no HTTP):
+**CLI** (terminálos ügynök, HTTP nélkül):
 
 ```bash
 npm run start -- --home ./runtime --workspace ./workspace
 ```
 
-**Dev** (backend + Vite HMR on :5173, with `/api` proxied to :3000):
+**Fejlesztői mód** (backend + Vite HMR a :5173 porton, az `/api` kérések a :3000 portra proxyzva):
 
 ```bash
 npm run dev:server     # backend
 npm run web:dev        # frontend
 ```
 
-**Sandbox** (OS-level isolation of bash/file operations; requires `ripgrep`):
+**Sandbox** (a bash-/fájlműveletek operációsrendszer-szintű izolációja; `ripgrep` szükséges):
 
 ```bash
 npm run server:sandbox -- --home ./runtime --workspace ./workspace --port 3000
 ```
 
-The included `restart-dev.sh` orchestrates both processes (build, start, stop, status, logs, smoke-test). Run `bash restart-dev.sh --help`.
+A mellékelt `restart-dev.sh` mindkét folyamatot vezényli (build, indítás, leállítás, állapot, naplók, smoke-teszt). Futtassa: `bash restart-dev.sh --help`.
 
 ---
 
-## Configuration
+## Konfiguráció
 
-`runtime/config/config.json` (template: [`config.example.json`](./config.example.json)):
+`runtime/config/config.json` (sablon: [`config.example.json`](./config.example.json)):
 
 ```json
 {
@@ -150,27 +150,27 @@ The included `restart-dev.sh` orchestrates both processes (build, start, stop, s
 }
 ```
 
-Each provider has a `baseUrl`, an `api` (`openai-completions` or `anthropic-messages`), an `apiKey`, and a `models[]` list. The server hot-rewrites this file when you switch model in the UI.
+Minden szolgáltató rendelkezik `baseUrl`, `api` (`openai-completions` vagy `anthropic-messages`), `apiKey` és `models[]` mezővel. A szerver automatikusan átírja ezt a fájlt, amikor a felületen modellt vált.
 
-### Runtime path resolution
+### Futtatókörnyezeti útvonalak feloldása
 
-Both CLI and server resolve paths through `apps/inno-agent/src/runtime.ts`. Precedence: **CLI flag > env var > `~/.inno-agent/...`**.
+Mind a CLI, mind a szerver az `apps/inno-agent/src/runtime.ts` segítségével oldja fel az útvonalakat. Elsőbbségi sorrend: **CLI jelző > környezeti változó > `~/.inno-agent/...`**.
 
-| CLI flag                          | Env var                | Default                   |
+| CLI jelző                          | Környezeti változó                | Alapértelmezett                   |
 | --------------------------------- | ---------------------- | ------------------------- |
 | `--home`                          | `INNO_HOME`            | `~/.inno-agent`           |
 | `--config`                        | `INNO_CONFIG_FILE`     | `<configDir>/config.json` |
 | `--config-dir`                    | `INNO_CONFIG_DIR`      | `<home>/config`           |
 | `--data` / `--data-dir`           | `INNO_DATA_DIR`        | `<home>/data`             |
 | `--skills` / `--skills-dir`       | `INNO_SKILLS_DIR`      | `<home>/skills`           |
-| `--workspace` / `--workspace-dir` | `INNO_WORKSPACE_DIR`   | invocation CWD            |
+| `--workspace` / `--workspace-dir` | `INNO_WORKSPACE_DIR`   | meghívási CWD             |
 | `--port`                          | `INNO_PORT` (`config`) | `3000`                    |
 
-### Content Hub (skill library + workspace presets)
+### Content Hub (készségtár + munkaterületi előbeállítások)
 
-The global **skill library** and the Simple Mode **workspace presets** (an `agent.md` + `.skills/` bundle, surfaced as one-click cards on the welcome screen) are both fetched from a remote **content hub**. By default this is the public GitHub repo [`Chloris-Blaxk/inno-agent-hub`](https://github.com/Chloris-Blaxk/inno-agent-hub); you can point it at a private GitHub repo or a self-hosted bundle service instead — a config change, no code change.
+A globális **készségtárat** és az Egyszerű mód **munkaterületi előbeállításait** (egy `agent.md` + `.skills/` csomagot, amely egykattintásos kártyaként jelenik meg az üdvözlőképernyőn) egy távoli **content hub** szolgálja ki. Alapértelmezésben ez a nyilvános [`Chloris-Blaxk/inno-agent-hub`](https://github.com/Chloris-Blaxk/inno-agent-hub) GitHub-tárház; helyette beállíthat privát GitHub-tárház vagy saját üzemeltetésű csomagszolgáltatás is — csak konfigurációs módosítás szükséges, kódmódosítás nem.
 
-Configure it in `runtime/config/config.json` (or via the UI: **Settings → Content Hub**):
+Konfigurálja a `runtime/config/config.json` fájlban (vagy a felületen: **Beállítások → Content Hub**):
 
 ```jsonc
 // Default: pull from a GitHub repo
@@ -198,9 +198,9 @@ Configure it in `runtime/config/config.json` (or via the UI: **Settings → Cont
 }
 ```
 
-Presets are downloaded on first use and cached under `<dataDir>/preset-cache/`; the templates bundled with the app serve as an offline fallback. A legacy `github.token` is migrated into `contentHub.token` automatically.
+Az előbeállítások első használatkor töltődnek le, majd a `<dataDir>/preset-cache/` alatt gyorsítótárba kerülnek; az alkalmazásba csomagolt sablonok offline tartalékként szolgálnak. Egy örökölt `github.token` automatikusan `contentHub.token` értékké migrálódik.
 
-**Self-hosting:** a zero-dependency local bundle service lives in [`scripts/content-hub-server/`](./scripts/content-hub-server/) — back it with your private git repo of skills + templates. See its [README](./scripts/content-hub-server/README.md) for the layout and run commands:
+**Saját üzemeltetés:** a nulla függőségű helyi csomagszolgáltatás a [`scripts/content-hub-server/`](./scripts/content-hub-server/) könyvtárban található — használja a készségek és sablonok privát git-tárházával. Az elrendezésről és a futtatási parancsokról lásd a [README](./scripts/content-hub-server/README.md) dokumentumát:
 
 ```bash
 CONTENT_DIR=/path/to/content node scripts/content-hub-server/server.mjs
@@ -208,7 +208,7 @@ CONTENT_DIR=/path/to/content node scripts/content-hub-server/server.mjs
 
 ---
 
-## Repository Layout
+## Tárházstruktúra
 
 ```text
 apps/inno-agent/          Backend (CLI + HTTP server), TypeScript -> dist/
@@ -218,13 +218,13 @@ runtime/                  Local runtime state (config, data, skills) - gitignore
 workspace/                Default agent working directory - gitignored
 ```
 
-The Pi SDK packages (`@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-web-ui`) are pulled from npm.
+A Pi SDK csomagok (`@earendil-works/pi-ai`, `@earendil-works/pi-coding-agent`, `@earendil-works/pi-web-ui`) npm-ből töltődnek le.
 
 ---
 
-## Architecture
+## Architektúra
 
-Inno Agent is a single-user system with four layers: **user interfaces → application layer → Pi agent runtime → layered memory.**
+Az Inno Agent egyetlen felhasználóra tervezett rendszer, amely négy rétegből áll: **felhasználói felületek → alkalmazási réteg → Pi ügynök-futtatókörnyezet → rétegzett memória.**
 
 ```text
 User Interfaces      CLI · Web UI (React) · Feishu · WeChat
@@ -238,22 +238,22 @@ Agent Runtime        Pi AgentSession · registered tools · inno extension
 Layered Memory       L1 learner profile · L2 native wiki · L3 session records
 ```
 
-- **Agent core** — `@earendil-works/pi-coding-agent` provides the loop. Inno wraps it with `apps/inno-agent/src/agent/inno-extension.ts`, which registers providers and tools (L1 learner, L2 wiki, L3 recall, scheduler, practice lab) and a `before_agent_start` hook that injects the L1 context pack — and, when relevant, threshold-gated L3 recall — into the system prompt.
-- **L1 — learner memory** (`src/memory/learner/`): evidence-driven profile + event log, summarized into a `ContextPack` per turn.
-- **L2 — wiki memory** (`src/memory/l2/`): structured wiki pages with frontmatter, links, graph, summarizer, and document ingestion; exposed as agent tools and via `/api/wiki/*`.
-- **L3 — session memory** (`src/memory/l3/` + Pi `SessionManager`): the SDK owns session JSONL files; Inno layers a SQLite index (`node:sqlite` + FTS5) on top for cross-conversation recall, surfaced both automatically (above a relevance threshold) and via the `l3_recall` tool.
-- **Scheduler** (`src/scheduler/`): cron jobs persisted to `jobs.json` + `runs.jsonl`; runnable from the agent (`run_scheduled_job`), the UI, or the daemon.
-- **Channels** (`src/channels/`): `ChannelRegistry` with Feishu (and bridge-mode WeChat) so reminders can be pushed back out.
-- **HTTP server** (`src/server.ts`): plain Node `http.createServer` with SSE for chat streaming and WebSocket for the in-browser terminal.
-- **Web UI** (`web/src/`): React 19 + Lit + Tailwind 4. State lives in framework-agnostic `EventEmitter` stores under `web/src/stores/`; REST/SSE calls in `web/src/api/`.
+- **Ügynökmag** — az `@earendil-works/pi-coding-agent` biztosítja a ciklust. Az Inno ezt az `apps/inno-agent/src/agent/inno-extension.ts` burkolóval egészíti ki, amely regisztrálja a szolgáltatókat és az eszközöket (L1 tanuló, L2 wiki, L3 felidézés, ütemező, gyakorlólabor), valamint egy `before_agent_start` horgot, amely az L1 kontextuscsomagot — és szükség esetén a küszöbérték-vezérelt L3-felidézést — a rendszerpromptba fecskendezi.
+- **L1 — tanulói memória** (`src/memory/learner/`): bizonyítékokra épülő profil + eseménynapló, körönként `ContextPack` formájában összefoglalva.
+- **L2 — wiki memória** (`src/memory/l2/`): frontmatterrel, hivatkozásokkal, gráffal, összegzővel és dokumentumbetöltéssel rendelkező strukturált wikioldalak; ügynökeszközökként és az `/api/wiki/*` útvonalon is elérhető.
+- **L3 — munkamenet-memória** (`src/memory/l3/` + Pi `SessionManager`): az SDK kezeli a munkamenet JSONL-fájljait; az Inno erre SQLite-indexet (`node:sqlite` + FTS5) épít a beszélgetések közötti felidézéshez, amely automatikusan (egy relevanciaküszöb felett) és az `l3_recall` eszközön keresztül is elérhető.
+- **Ütemező** (`src/scheduler/`): cron feladatok `jobs.json` + `runs.jsonl` fájlokban perzisztálva; az ügynökből (`run_scheduled_job`), a felületről vagy a démonból futtathatók.
+- **Csatornák** (`src/channels/`): `ChannelRegistry` Feishuval (és bridge módú WeChattel), hogy az emlékeztetők visszaküldhetők legyenek.
+- **HTTP-szerver** (`src/server.ts`): egyszerű Node `http.createServer`, SSE-vel a chat streameléséhez és WebSockettel a böngészőbeli terminálhoz.
+- **Webes felület** (`web/src/`): React 19 + Lit + Tailwind 4. Az állapotot a keretrendszertől független `EventEmitter` tárolók kezelik a `web/src/stores/` alatt; a REST/SSE-hívások a `web/src/api/` alatt találhatók.
 
-The backend API route table and runtime details are in [`apps/inno-agent/README.md`](./apps/inno-agent/README.md).
+A backend API-útvonalak táblázata és a futtatókörnyezet részletei az [`apps/inno-agent/README.md`](./apps/inno-agent/README.md) dokumentumban találhatók.
 
 ---
 
-## Deployment
+## Telepítés
 
-A typical production layout separates code, config, data, and workspace:
+Egy tipikus éles elrendezés elkülöníti a kódot, a konfigurációt, az adatokat és a munkaterületet:
 
 ```text
 /opt/inno-agent              # this repository
@@ -272,37 +272,37 @@ INNO_PORT=3000 \
 npm run server
 ```
 
-A [`Dockerfile`](./Dockerfile) and [`docker-compose.yml`](./docker-compose.yml) are provided as starting points.
+Kiindulópontként rendelkezésre áll egy [`Dockerfile`](./Dockerfile) és egy [`docker-compose.yml`](./docker-compose.yml).
 
 ---
 
-## Contributing
+## Közreműködés
 
-Issues and PRs are welcome. Before opening a PR, please run `npm run build` locally — there is no top-level lint or test runner wired up yet, but the TypeScript build doubles as a sanity check. Keep changes focused, match the existing code style, and update the relevant docs when behavior changes.
+A hibajelentéseket és PR-eket örömmel fogadjuk. PR megnyitása előtt futtassa helyben a `npm run build` parancsot — még nincs felső szintű lint- vagy tesztfuttató konfigurálva, de a TypeScript build egyben épségellenőrzés is. A változtatások maradjanak célzottak, kövessék a meglévő kódstílust, és a viselkedés változásakor frissítsék a vonatkozó dokumentációt.
 
 ---
 
-## Community
+## Közösség
 
-Join the WeChat user group to ask questions, share use cases, and follow updates. Scan the QR code below:
+Csatlakozzon a WeChat felhasználói csoporthoz kérdésekhez, használati esetek megosztásához és a frissítések követéséhez. Olvassa be az alábbi QR-kódot:
 
 <p align="center">
-  <img src="./docs/assets/wechat-community-qr.png" alt="Inno Agent WeChat community group QR code" width="240" />
+  <img src="./docs/assets/wechat-community-qr.png" alt="Az Inno Agent WeChat közösségi csoportjának QR-kódja" width="240" />
 </p>
 
 ---
 
-## License
+## Licenc
 
 [MIT](./LICENSE).
 
-This project depends on the Pi SDK (`@earendil-works/pi-*` packages by Mario Zechner), which is also MIT-licensed and consumed via npm.
+Ez a projekt a Pi SDK-ra (Mario Zechner `@earendil-works/pi-*` csomagjaira) épül, amely szintén MIT-licencű és npm-en keresztül kerül felhasználásra.
 
 ---
 
-## Citation
+## Hivatkozás
 
-If you use Inno Agent in your research, please cite it as follows:
+Ha kutatásában használja az Inno Agentet, kérjük, hivatkozza az alábbiak szerint:
 
 ```bibtex
 @misc{hao2026innoagent,
