@@ -20,6 +20,7 @@ import { arrayBufferToBase64 } from "../api/uploads.js";
 import { uploadWorkspaceFiles } from "../api/workspace.js";
 import { normalizeMarkdownMath } from "../utils/markdown-math.js";
 import { groupByCategory, matchesQuery } from "../utils/category-grouping.js";
+import { useContentLocale } from "../i18n/content-locale.js";
 import { useStoreSnapshot } from "./hooks.js";
 import { QuestionDialog } from "./QuestionDialog.js";
 import { buildConversationTurns, ConversationMinimap } from "./ConversationMinimap.js";
@@ -396,6 +397,7 @@ function PresetPicker({
 
 export function ChatCenter() {
 	const { t } = useTranslation();
+	const contentLocale = useContentLocale();
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 	const draftRef = useRef("");
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -601,10 +603,10 @@ export function ChatCenter() {
 	// shown in Simple Mode. Falls back to an empty list on failure (offline /
 	// hub unreachable) so the composer still works.
 	useEffect(() => {
-		if (isWelcome && simpleMode && presets.length === 0) {
-			void listRemotePresets().then(setPresets).catch(() => setPresets([]));
+		if (isWelcome && simpleMode) {
+			void listRemotePresets(false, contentLocale).then(setPresets).catch(() => setPresets([]));
 		}
-	}, [isWelcome, simpleMode, presets.length]);
+	}, [contentLocale, isWelcome, simpleMode]);
 
 	// One-click open: instantiate the preset into a fresh workspace + session and
 	// reveal it in the right panel.
@@ -613,7 +615,7 @@ export function ChatCenter() {
 		setOpeningPresetId(presetId);
 		void (async () => {
 			try {
-				await sessionsStore.createSessionWith({ presetId });
+				await sessionsStore.createSessionWith({ presetId, contentLocale });
 				appStore.setRightPanelTab("preview");
 				appStore.setWorkspaceWidth(560);
 				appStore.setWorkspaceMode("half");
@@ -623,7 +625,7 @@ export function ChatCenter() {
 				setOpeningPresetId(null);
 			}
 		})();
-	}, [t]);
+	}, [contentLocale, t]);
 
 	const handleSend = useCallback(() => {
 		const rawValue = inputRef.current?.value ?? "";

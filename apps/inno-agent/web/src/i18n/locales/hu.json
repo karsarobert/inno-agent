@@ -1,0 +1,667 @@
+{
+	"workspace": {
+		"title": "Munkaterület",
+		"openWorkspace": "Nyitott munkaterület",
+		"collapse": "Összeomlás",
+		"half": "Fél",
+		"full": "Tele",
+		"resize": "Húzza az átméretezéshez",
+		"tabs": {
+			"notebook": "Jegyzetfüzet",
+			"preview": "Előnézet",
+			"profile": "Profil",
+			"skills": "Készségek",
+			"jobs": "Állások",
+			"settings": "Beállítások elemre"
+		}
+	},
+	"common": {
+		"save": "Mentés",
+		"cancel": "Mégsem",
+		"done": "Kész",
+		"edit": "Szerkesztés",
+		"delete": "Töröl",
+		"refresh": "Frissítés",
+		"new": "Új",
+		"add": "Hozzáadás",
+		"loading": "Betöltés…",
+		"noData": "Nincs adat",
+		"search": "Keresés…",
+		"enabled": "Engedélyezve",
+		"disabled": "Letiltva",
+		"enable": "Engedélyezés",
+		"disable": "Letiltás",
+		"yes": "Igen",
+		"no": "Nem",
+		"ok": "OK",
+		"saving": "Mentés…",
+		"saved": "Mentve",
+		"copy": "Másolat",
+		"copied": "Másolva",
+		"remove": "Eltávolítás",
+		"open": "Megnyitás",
+		"close": "Bezárás",
+		"pasteCollapsed": "«{{count}} beillesztett sor»",
+		"pasteCollapsedUndo": "Beillesztés visszavonása",
+		"questionPending": "Kérjük, válaszoljon a fenti kérdésre, mielőtt folytatná",
+		"questionPendingJump": "Kérdés megtekintése"
+	},
+	"sessions": {
+		"export": "Exportálás Markdown néven"
+	},
+	"notebook": {
+		"title": "Jegyzetfüzet",
+		"subtitle": "{{nodes}} csomópontok · {{edges}} élek",
+		"search": "Oldalak vagy címkék keresése…",
+		"filter": {
+			"all": "Minden",
+			"source-summary": "Források",
+			"entity": "Entitások",
+			"concept": "Fogalmak",
+			"analysis": "Elemzés"
+		},
+		"view": {
+			"graph": "Grafikon",
+			"page": "oldal"
+		},
+		"graph": {
+			"fit": "Fit",
+			"center": "Központ",
+			"labels": "Címkék",
+			"size": "Csomópont mérete",
+			"refresh": "Frissítés",
+			"relayout": "Újra elrendezés",
+			"show": "Megmutat:",
+			"empty": "Még nincsenek grafikonadatok."
+		},
+		"editor": {
+			"preview": "Előnézet",
+			"splitHint": "Élő előnézet a jobb oldalon",
+			"h1": "1. címsor",
+			"h2": "2. címsor",
+			"h3": "3. címsor",
+			"bold": "Bátor",
+			"italic": "Dőlt",
+			"quote": "Idézet",
+			"list": "Felsorolásos lista",
+			"numbered": "Számozott lista",
+			"link": "Link",
+			"code": "Inline kód",
+			"codeBlock": "Kódblokk"
+		},
+		"page": {
+			"empty": "Válasszon egy oldalt a bal oldalon, vagy kattintson egy csomópontra a diagramon.",
+			"selectFromGraph": "Válasszon ki egy csomópontot a grafikonon",
+			"openInNotebook": "Nyissa meg az oldalt",
+			"backToGraph": "Vissza a grafikonhoz"
+		},
+		"delete": {
+			"button": "Töröl",
+			"confirm": "Törli a „{{title}}” elemet? Ezt az oldalt véglegesen eltávolítjuk."
+		},
+		"inspector": {
+			"title": "Csomópont",
+			"empty": "Válasszon egy csomópontot az ellenőrzéshez. Kattintson duplán egy nem címke csomópontra az oldal megnyitásához.",
+			"type": "Írja be",
+			"tags": "Címkék",
+			"openPage": "Nyissa meg az oldalt"
+		},
+		"types": {
+			"source-summary": "Forrás",
+			"entity": "Entitás",
+			"concept": "Koncepció",
+			"analysis": "Elemzés",
+			"tag": "Címke",
+			"unknown": "Ismeretlen"
+		},
+		"status": {
+			"draft": "tervezet",
+			"reviewed": "áttekintette",
+			"outdated": "elavult"
+		},
+		"confidence": {
+			"low": "alacsony önbizalom",
+			"medium": "közepes önbizalom",
+			"high": "magas magabiztosság"
+		},
+		"contested": "vitatott",
+		"noPages": "Nincsenek wiki oldalak",
+		"selectPage": "Válasszon egy oldalt az előnézethez"
+	},
+	"preview": {
+		"workspace": "Munkaterület",
+		"refresh": "Frissítés",
+		"loading": "Munkaterület betöltése…",
+		"loadingFile": "Fájl betöltése…",
+		"empty": "A munkaterület üres.",
+		"noFile": "Nincs kiválasztva fájl",
+		"selectFile": "Válasszon ki egy fájlt a munkaterületről",
+		"noPreview": "Nincs előnézet",
+		"binaryFile": "Bináris fájl",
+		"openAsText": "Megnyitás szövegként",
+		"emptyTable": "Üres asztal",
+		"tableRows": "{{count}} sorok",
+		"officeParsing": "Dokumentum szövegének kibontása...",
+		"officeNote": "Az előnézethez kivont szöveg · A formázás eltérhet",
+		"officeUnavailable": "Az előnézet nem érhető el",
+		"pageCount": "{{count}} oldalak",
+		"page": "oldal",
+		"pptxLoading": "Diák megjelenítése...",
+		"pptxCount": "{{count}} csúszdák",
+		"pptxSlide": "Csúszda {{n}}",
+		"pptxFailed": "Nem sikerült megjeleníteni a prezentációt",
+		"docxLoading": "Dokumentum megjelenítése...",
+		"docxFailed": "Nem sikerült renderelni a dokumentumot",
+		"xlsxLoading": "Táblázat megjelenítése...",
+		"xlsxFailed": "Nem sikerült megjeleníteni a táblázatot",
+		"xlsxLargeSheetWarning": "Nagy lap – az első {{n}} sorokat mutatja",
+		"streamingGenerating": "Generálás",
+		"streamingDone": "Generált",
+		"streamingError": "Megszakított",
+		"streamingLines": "vonalak",
+		"streamingHint": "A hosszú kimenet a jobb oldalon látható; a chat összefoglalót tart.",
+		"streamingWaiting": "Várakozás a kimenetre…",
+		"streamingClose": "Generációs előnézet bezárása"
+	},
+	"profile": {
+		"title": "Tanulói profil",
+		"subtitle": "Beszélgetésekből és tanulási eseményekből épül fel; szerkeszthető.",
+		"refresh": "Frissítés",
+		"empty": "Még nincsenek profiladatok.",
+		"version": "verzió {{version}} · {{updated}}",
+		"sections": {
+			"summary": "Összegzés",
+			"goals": "Gólok",
+			"knowledge": "Tudás",
+			"misconceptions": "Tévhitek",
+			"preferences": "Preferences"
+		},
+		"summary": {
+			"placeholder": "Az ügynök magas szintű összefoglalója a tanulóról…",
+			"activeGoals": "Aktív célok",
+			"concepts": "Nyomon követett fogalmak",
+			"dueReviews": "Felülvizsgálatra esedékes",
+			"openMisconceptions": "Nyílt tévhitek"
+		},
+		"goals": {
+			"addNew": "+ Új cél",
+			"newTitle": "Új tanulási cél",
+			"newGoalDefault": "Új cél",
+			"addFailed": "Nem sikerült hozzáadni: {{message}}",
+			"namePlaceholder": "például Master Rust tulajdonjog",
+			"empty": "Még nincsenek gólok.",
+			"title": "Cím",
+			"type": "Írja be",
+			"priority": "Prioritás",
+			"status": "Állapot",
+			"successCriteria": "Sikerkritériumok",
+			"successCriteriaPlaceholder": "Soronként egy…",
+			"typeOptions": {
+				"skill": "Ügyesség",
+				"concept": "Koncepció",
+				"project": "Projekt",
+				"exam": "Vizsgálat",
+				"habit": "Szokás"
+			},
+			"statusOptions": {
+				"active": "Aktív",
+				"paused": "Szüneteltetve",
+				"completed": "Befejezve",
+				"archived": "Archivált"
+			}
+		},
+		"knowledge": {
+			"empty": "Még nincsenek nyomon követett fogalmak.",
+			"concept": "Koncepció",
+			"domain": "Domain",
+			"mastery": "Mesterség",
+			"due": "A felülvizsgálat esedékes",
+			"diagnosis": "Diagnózis",
+			"diagnosisPlaceholder": "Megjegyzések a jelenlegi megértéshez…",
+			"nextActions": "Következő műveletek",
+			"nextActionsPlaceholder": "Soronként egy…"
+		},
+		"misconceptions": {
+			"empty": "Nincs nyomon követhető tévhit.",
+			"description": "Leírás",
+			"severity": "Súlyosság",
+			"status": "Állapot",
+			"repair": "Javítási stratégia",
+			"statusOptions": {
+				"active": "aktív",
+				"repairing": "javítás",
+				"resolved": "megoldva",
+				"stale": "állott"
+			}
+		},
+		"preferences": {
+			"explanationStyle": "Magyarázat stílusa",
+			"practiceStyle": "Gyakorold a stílust",
+			"feedbackTone": "Visszajelzési hang",
+			"avoid": "Elkerül",
+			"addPlaceholder": "Nyomja meg az Entert a hozzáadáshoz…"
+		}
+	},
+	"jobs": {
+		"title": "Ütemezett munkák",
+		"subtitle": "Ismétlődő automatizálások és emlékeztetők",
+		"newJob": "Új",
+		"empty": "Nincs ütemezett munka.",
+		"lastRun": "Utolsó futtatás: {{time}}",
+		"nextRun": "Következő: {{time}}",
+		"never": "soha",
+		"actions": {
+			"run": "Futtatás most",
+			"running": "Futtatás…",
+			"edit": "Szerkesztés",
+			"delete": "Töröl",
+			"enable": "Engedélyezés",
+			"disable": "Letiltás"
+		},
+		"lastResult": "Utolsó eredmény:",
+		"form": {
+			"newTitle": "Új munka",
+			"editTitle": "Munka szerkesztése",
+			"name": "Név",
+			"namePlaceholder": "például Napi áttekintés",
+			"taskType": "Feladat típusa",
+			"prompt": "Gyors",
+			"promptPlaceholder": "Utasítás az ügynöknek…",
+			"schedule": "Menetrend",
+			"enabled": "Engedélyezve",
+			"frequency": "Frekvencia",
+			"time": "Idő",
+			"weekdays": "Ismételje meg",
+			"dayOfMonth": "A hónap napja",
+			"lastDay": "Utolsó nap",
+			"onceDate": "Dátum",
+			"customCron": "Egyedi cron",
+			"cronPlaceholder": "min óra dom mon dow",
+			"cronHint": "5 mező: min óra nap hó hétköznap",
+			"advanced": "Haladó (Cron)",
+			"preview": "Következő: {{time}}"
+		},
+		"frequency": {
+			"daily": "Minden nap",
+			"weekly": "Minden héten",
+			"monthly": "Minden hónapban",
+			"weekday": "Hétköznapok",
+			"once": "Egyszer",
+			"custom": "Egyedi cron"
+		},
+		"weekdays": {
+			"0": "Vasárnap",
+			"1": "Hétfő",
+			"2": "Kedd",
+			"3": "Szerda",
+			"4": "Csütörtök",
+			"5": "Péntek",
+			"6": "Szombat"
+		},
+		"taskTypes": {
+			"daily_review": "Napi áttekintés",
+			"weekly_summary": "Heti összefoglaló",
+			"graphify_update": "Grafikonfrissítés",
+			"learner_profile_reflection": "Profil tükröződés",
+			"spaced_review": "Szóközű felülvizsgálat",
+			"push_reminder": "Push emlékeztető",
+			"custom_prompt": "Egyéni felszólítás"
+		},
+		"errors": {
+			"nameRequired": "A név megadása kötelező",
+			"cronRequired": "Cron kifejezés szükséges",
+			"cronInvalid": "Érvénytelen cron kifejezés",
+			"timeRequired": "Válassz időpontot",
+			"weekdayRequired": "Válasszon legalább egy hétköznapot",
+			"dateRequired": "Válassz egy dátumot",
+			"saveFailed": "Nem sikerült menteni: {{message}}"
+		},
+		"humanCron": {
+			"daily": "Naponta {{time}} időpontban",
+			"weekday": "Munkanapokon {{time}} időpontban",
+			"weekly": "Hetente {{days}} napján, {{time}} időpontban",
+			"monthly": "Havonta a {{day}} napon a {{time}} időpontban",
+			"monthlyLast": "A hónap utolsó napja itt: {{time}}",
+			"once": "Egyszer {{date}} {{time}}"
+		}
+	},
+	"skills": {
+		"title": "Készségek",
+		"subtitle": "Betöltve a konfigurált készségek könyvtárából",
+		"reload": "Újratöltés",
+		"upload": "Feltöltés",
+		"uploading": "Feltöltés…",
+		"package": "Alapértelmezett csomag:",
+		"packageDesc": "A ZIP-nek tartalmaznia kell egy SKILL.md fájlt.",
+		"empty": "Még nincsenek készségek",
+		"emptyDesc": "Töltse fel a <készség-név>.zip fájlt. Kicsomagolják és betöltik.",
+		"noDescription": "Nincs leírás",
+		"loaded": "töltött",
+		"notLoaded": "nincs betöltve",
+		"library": "Képességtár",
+		"libraryTitle": "Képességtár",
+		"librarySubtitle": "Böngésszen és importáljon ismereteket az inno-agent-hub könyvtárból",
+		"libraryEmpty": "A könyvtárban nem állnak rendelkezésre készségek",
+		"import": "Importálás",
+		"importing": "Importálás…",
+		"installed": "Telepítve",
+		"libraryError": "Nem sikerült betölteni a készségtárat",
+		"searchPlaceholder": "Keresés név, leírás vagy kategória szerint…",
+		"uncategorized": "Nincs kategorizálva",
+		"noResults": "Nincsenek megfelelő képességek"
+	},
+	"presets": {
+		"simpleModeHeader": "Indulásra kész · válasszon egyet a kezdéshez",
+		"searchPlaceholder": "Presetek keresése…",
+		"uncategorized": "Nincs kategorizálva",
+		"noResults": "Nincsenek megfelelő előbeállítások",
+		"opening": "Megnyitás…"
+	},
+	"settings": {
+		"title": "Beállítások",
+		"refresh": "Frissítés",
+		"loading": "Beállítások betöltése…",
+		"stats": {
+			"server": "Szerver",
+			"healthy": "egészséges",
+			"offline": "offline módban",
+			"defaultModel": "Alapértelmezett modell",
+			"wiki": "Wiki",
+			"wikiStat": "{{count}} oldalak · {{size}}"
+		},
+		"models": "Modellek",
+		"current": "Jelenlegi",
+		"use": "Kiválasztás",
+		"providers": "Szolgáltatók",
+		"newProvider": "Új szolgáltató",
+		"memorySection": "Memória rétegek",
+		"simpleMode": {
+			"title": "Egyszerű mód",
+			"onDesc": "Be: áramvonalas, használatra kész élmény. A memória és a profil ki van kapcsolva; a jegyzetfüzet, a profil, a munkák és a készségek lapjai, valamint a terminál (kísérleti panel) el vannak rejtve, és a beállítások oldala leegyszerűsödött; előre beállított munkaterületek jelennek meg az üdvözlőképernyőn.",
+			"offDesc": "Ki: a tanulói profil, a memória, a notebook, az ütemezett munkák, a készségek és a rendelkezésre álló terminál teljes élménye.",
+			"memoryLocked": "A memória ki van kapcsolva, ha az Egyszerű mód be van kapcsolva. Ezek módosításához kapcsolja ki az Egyszerű módot."
+		},
+		"l1": {
+			"title": "Tanulói profil (L1)",
+			"onDesc": "Be: minden fordulóban beilleszti a tanulói profilt, és lehetővé teszi, hogy az eszközök frissítsék a személyre szabott tanítás érdekében.",
+			"offDesc": "Ki: a tanulói profilt nem olvassák be a promptba, és nem frissítik az eszközök."
+		},
+		"l2": {
+			"title": "Tudásbázis (L2)",
+			"onDesc": "Be: lehetővé teszi, hogy az ügynök archiválja az anyagokat a Wiki tudásbázisba, és lekérdezze azt.",
+			"offDesc": "Ki: az archiválás és a tudásbázis lekérdezése le van tiltva."
+		},
+		"memory": {
+			"title": "Keresztbeszélgetési memória (L3)",
+			"onDesc": "Be: megkeresi a múltbeli beszélgetéseket az SQLite-on keresztül, és automatikusan előhívja a releváns kontextust.",
+			"offDesc": "Ki: a válaszok csak az aktuális munkaterület tartalmát és az aktuális beszélgetési környezetet használják."
+		},
+		"github": {
+			"title": "GitHub token",
+			"desc": "Választható. A készségkönyvtár lekérésére szolgál a GitHubról. Token nélkül a nem hitelesített API IP-nkénti 60 kérés/óra korlátozott; egy token 5000/óra-ra emeli. Nyilvános repókhoz elegendő egy hatókör nélküli token.",
+			"placeholder": "ghp_… vagy github_pat_…",
+			"saved": "Mentve",
+			"clear": "Törlés"
+		},
+		"ocr": {
+			"title": "OCR API (képszöveg felismerés)",
+			"desc": "Ha a konfigurált modell nem ismeri fel a képeket, meghívja a Baidu vl-ocr (PaddleOCR-VL) API programot, hogy szöveget vonjon ki a képekből. Szerezzen be egy tokent a Baidu AI Studio-tól.",
+			"tokenPlaceholder": "hordozó jelző",
+			"modelPlaceholder": "PaddleOCR-VL-1.6",
+			"baseUrlPlaceholder": "https://paddleocr.aistudio-app.com/api/v2/ocr/jobs",
+			"saved": "Mentve",
+			"clear": "Törlés"
+		},
+		"form": {
+			"providerId": "Szolgáltató azonosítója",
+			"baseUrl": "Alap URL",
+			"apiKey": "API kulcs",
+			"apiKeyPreserved": "A API kulcs megmarad, hacsak nem cserélik",
+			"modelId": "Modell azonosító",
+			"modelName": "Modell neve",
+			"contextWindow": "Kontextus ablak",
+			"maxTokens": "Max tokenek",
+			"reasoning": "Érvelés",
+			"supportsImages": "Képbevitel támogatása",
+			"authHeader": "Bearer-hitelesítés használata",
+			"bypassProxy": "Rendszerproxy megkerülése",
+			"makeDefault": "alapértelmezetté tenni",
+			"preserveApiKey": "őrizze meg a kulcsot"
+		},
+		"errors": {
+			"providerRequired": "A szolgáltató azonosítója kötelező",
+			"baseUrlRequired": "Az alap URL szükséges",
+			"modelRequired": "A modellazonosító megadása kötelező",
+			"tokensInvalid": "A token értékeknek pozitív számoknak kell lenniük"
+		},
+		"saved": "A szolgáltató elmentve",
+		"saveProvider": "Szolgáltató mentése",
+		"savingProvider": "Megtakarítás…",
+		"deleteProvider": "Töröl",
+		"confirmDelete": "Törli a \"{{id}}\" szolgáltatót? Ezt nem lehet visszavonni.",
+		"language": "Nyelv",
+		"languageOptions": {
+			"zh-CN": "Kínai",
+			"en": "Angol",
+			"hu": "Magyar"
+		},
+		"contentLanguage": "Tartalom nyelve",
+		"contentLanguageOptions": {
+			"zh-CN": "Kínai",
+			"en": "Angol",
+			"hu": "Magyar"
+		},
+		"theme": "Téma",
+		"themeOptions": {
+			"light": "Fény",
+			"warm": "Meleg",
+			"ocean": "Óceán",
+			"innospark": "InnoSpark"
+		},
+		"channels": {
+			"title": "Csatornák",
+			"feishu": {
+				"title": "feishu (pacsirta)",
+				"desc": "Natív WebSocket kapcsolat a Feishu DM-hez",
+				"appId": "Alkalmazásazonosító",
+				"appSecret": "App Secret",
+				"appSecretHint": "Hagyja üresen a meglévő kulcs megtartásához"
+			},
+			"qq": {
+				"title": "QQ",
+				"desc": "Csatlakoztassa a QQ DM-et a Bridge Sidecar-on keresztül"
+			},
+			"wechat": {
+				"title": "WeChat",
+				"desc": "Natív iLink kapcsolat a WeChat DM-hez",
+				"scanLogin": "Beolvasás a bejelentkezéshez",
+				"scanning": "QR-kód lekérése…",
+				"waitingScan": "QR-kód beolvasása a WeChat segítségével",
+				"scanned": "Beolvasva, megerősítésre vár…",
+				"confirmed": "Sikeres bejelentkezés",
+				"expired": "A QR-kód lejárt, próbálja újra",
+				"connected": "Csatlakozva",
+				"disconnected": "Szétkapcsolt",
+				"relogin": "Bejelentkezés újra",
+				"botId": "Bot azonosító"
+			},
+			"enabled": "Engedélyezve",
+			"personalOnly": "Csak DM",
+			"allowedUserIds": "Engedélyezett felhasználói azonosítók",
+			"allowedUserIdsHint": "Soronként egy azonosító, az üresen nincs korlátozás",
+			"sidecarBaseUrl": "Oldalkocsi URL",
+			"bridgeToken": "Bridge Token",
+			"bridgeTokenHint": "Auth titok Sidecar és Inno között",
+			"bridgeTokenPlaceholder": "Hagyja üresen a meglévő kulcs megtartásához",
+			"save": "Csatornák mentése",
+			"saving": "Megtakarítás…",
+			"saved": "Csatornák mentve",
+			"mode": "Mód",
+			"modeNative": "Bennszülött",
+			"modeBridge": "Híd"
+		},
+		"contentHub": {
+			"title": "Tartalomközpont (készségtár + előre beállított értékek)",
+			"desc": "A készségkönyvtár és az előre beállított munkaterületek innen kerülnek lekérésre. Alapértelmezésben a nyilvános repo; váltson egy privát GitHub-repóra vagy egy saját üzemeltetésű szolgáltatásra.",
+			"bundle": "Önálló szolgáltatás",
+			"tokenPlaceholder": "Hozzáférési token (privát repo / felső határ, opcionális)"
+		},
+		"feishu": {
+			"qrRegister": "Szkennelés kötéshez",
+			"qrTitle": "Feishu QR regisztráció",
+			"qrSubtitle": "Nyissa meg a Feishut a telefonján, olvassa be a QR-kódot egy bot alkalmazás létrehozásához.",
+			"qrExpired": "A QR kód lejárt",
+			"qrDenied": "Engedély megtagadva",
+			"qrConfirmed": "A kötés sikeres",
+			"qrWaiting": "Várakozás a beolvasásra...",
+			"qrRegenerate": "Regenerátum"
+		}
+	},
+	"chat": {
+		"welcomePlaceholder": "Mit szeretnél tanulni vagy létrehozni? Küldj üzenetet a kezdéshez…",
+		"loadingSession": "Munkamenet betöltése…",
+		"emptySessionTitle": "Nincsenek üzenetek ebben a beszélgetésben",
+		"emptySessionHint": "A beszélgetés elindításához írjon be egy üzenetet alább.",
+		"uploadFiles": "Fájlok feltöltése a munkaterületre",
+		"uploadHint": "Válasszon ki egy meglévő munkaterületet, vagy indítson beszélgetést a fájlok feltöltése előtt",
+		"attachImage": "Kép csatolása",
+		"imageNotSupported": "A jelenlegi modell nem támogatja a képeket",
+		"stopGeneration": "Generálás leállítása",
+		"retryLast": "Utolsó üzenet újrapróbálása",
+		"send": "Küldés",
+		"describeImage": "Kérlek, írd le ezt a képet",
+		"uploadedToWorkspace": "[Feltöltés a munkaterületre]",
+		"newChatHere": "Új beszélgetések jönnek létre ezen a munkaterületen",
+		"wsTemp": "Ideiglenes · eldobható",
+		"wsNew": "Új munkatér",
+		"wsExisting": "Meglévő munkatér",
+		"wsNamePlaceholder": "Munkaterület neve, pl. panda bemutató",
+		"wsSelectPlaceholder": "Válasszon egy munkaterületet…",
+		"errWsName": "Adja meg a munkaterület nevét",
+		"errWsSelect": "Kérjük, válasszon egy munkaterületet",
+		"errOpenPreset": "A preset megnyitása nem sikerült",
+		"errCreateSession": "Nem sikerült létrehozni a munkamenetet",
+		"removeUpload": "Feltöltés eltávolítása",
+		"removeImage": "Kép eltávolítása",
+		"streamingInWorkspace": "Hosszú kimenet jön létre a fájlpanelen",
+		"longContentCollapsed": "A hosszú tartalom összeomlott, hogy az oldal érzékeny legyen",
+		"expandFullContent": "A teljes tartalom kibontása",
+		"collapseFullContent": "A teljes tartalom összecsukása",
+		"composerPlaceholder": "Írj üzenetet…",
+		"minimap": {
+			"navigation": "Az aktuális beszélgetés navigációja",
+			"jumpToTurn": "Ugrás a forduláshoz {{count}}: {{title}}",
+			"turn": "Forgassa el a {{count}}-t",
+			"emptyTurn": "Ebben a körben nincs szöveg"
+		}
+	},
+	"question": {
+		"typeSomething": "Írj be valamit…",
+		"chatAboutThis": "Csevegés erről",
+		"submit": "Beküld",
+		"submitNext": "Következő",
+		"optionSelectedHint": "Választott opció; egyéni szöveg beírásához törölje a kijelölést"
+	},
+	"sidebar": {
+		"expand": "Kibontás",
+		"collapse": "Összecsukás",
+		"loadWorkspace": "Töltse be ezt a munkaterületet az előnézeti panelbe",
+		"newChatInWorkspace": "Új beszélgetés ezen a munkaterületen",
+		"renameWorkspace": "Munkaterület átnevezése",
+		"deleteWorkspace": "Munkaterület törlése",
+		"originChannel": "Származási hely: {{channel}}",
+		"interactedChannel": "Interakció: {{channel}}",
+		"generateTopic": "AI generál téma",
+		"rename": "Átnevezés",
+		"archive": "Archívum",
+		"unarchive": "Archiválás megszüntetése",
+		"ungrouped": "Csoportosítás nélkül",
+		"archived": "Archivált",
+		"recent": "Legutóbbi",
+		"noConversations": "Nincsenek beszélgetések",
+		"deleteConversation": "Beszélgetés törlése",
+		"workspaceLabel": "Munkaterület: {{name}}",
+		"newChat": "Új beszélgetés",
+		"searchPlaceholder": "Beszélgetések keresése...",
+		"all": "Minden",
+		"sortWorkspaces": "Munkaterületek rendezése",
+		"sortRecent": "Nemrég frissítve",
+		"sortOldest": "Legutóbb frissítve",
+		"sortNameAsc": "Név A → Z",
+		"sortNameDesc": "Név Z → A",
+		"sortCustom": "Egyedi rendelés",
+		"sortCustomClearFilter": "Először törölje a keresési vagy csatornaszűrőket",
+		"moveWorkspaceUp": "Mozgassa felfelé a munkaterületet",
+		"moveWorkspaceDown": "Mozgassa le a munkaterületet",
+		"noMatch": "Nincsenek megfelelő eredmények",
+		"noSessions": "Még nincsenek beszélgetések",
+		"confirmDeleteSession": "Törli a „{{name}}” beszélgetést? Ezt nem lehet visszavonni.",
+		"confirmDeleteWorkspace": "Törli a „{{name}}” munkaterületet?\n{{detail}}",
+		"deleteWsWithSessions": "A {{count}} beszélgetés(ek) kötetlenek lesznek (áthelyezik az ideiglenes munkaterületre); beszélgetési rekordok és fájlok nem törlődnek.",
+		"deleteWsEmpty": "Ezen a munkaterületen nincsenek beszélgetések; a munkaterület-rekord törlésre kerül."
+	},
+	"mode": {
+		"currentSimpleClickNormal": "Jelenleg: Egyszerű mód · Váltás normál módra",
+		"currentNormalClickSimple": "Jelenleg: Normál mód · Váltás egyszerű módra",
+		"switchToNormal": "Váltás normál módra",
+		"switchToSimple": "Váltás egyszerű módra",
+		"simpleShort": "Egyszerű mód · Váltás normál módra",
+		"normalShort": "Normál mód · Váltás egyszerű módra",
+		"simpleTag": "(Egyszerű mód)"
+	},
+	"terminal": {
+		"title": "Terminál",
+		"expand": "Terminál kibontása",
+		"collapse": "Terminál összecsukása",
+		"history": "Történelem",
+		"restart": "Indítsa újra a terminált",
+		"noSession": "Először nyissa meg vagy hozzon létre egy beszélgetést",
+		"status": {
+			"idle": "Nincs csatlakoztatva",
+			"connecting": "Csatlakozás…",
+			"connected": "Csatlakozva",
+			"running": "Futás…",
+			"disconnected": "Szétkapcsolt",
+			"error": "Hiba"
+		},
+		"runs": {
+			"title": "Futtassa az előzményeket",
+			"count": "{{count}} fut",
+			"empty": "Nincsenek futási rekordok",
+			"incomplete": "Futás",
+			"loadFailed": "Nem sikerült betölteni",
+			"loadDetailFailed": "Nem sikerült betölteni a részleteket",
+			"archiveFailed": "Nem sikerült archiválni",
+			"archivedTo": "Archivált ide: {{path}}",
+			"archiving": "Archiválás…",
+			"archiveAsNote": "Archiválás jegyzetként",
+			"noOutput": "(nincs kimenet)",
+			"selectRecord": "A részletek megtekintéséhez válasszon egy rekordot a bal oldalon",
+			"source": "forrás: {{file}}",
+			"noSource": "nincs forrásfájl"
+		}
+	},
+	"files": {
+		"download": "Letöltés",
+		"editing": "Szerkesztés",
+		"newFile": "Új fájl",
+		"newFolder": "Új mappa",
+		"downloadFolder": "Letöltés ZIP néven",
+		"rename": "Átnevezés",
+		"delete": "Töröl",
+		"newFileHere": "Új fájl itt",
+		"newFolderHere": "Új mappa itt",
+		"confirmDelete": "Töröl?",
+		"uploadSkill": "Képességcsomag (.zip/.md) feltöltése a .skills fájlba",
+		"dropToUpload": "Húzza le a feltöltendő fájlokat"
+	},
+	"categories": {
+		"教学辅导": "Oktatás és korrepetálás",
+		"内容创作": "Tartalom létrehozása",
+		"文档处理": "Dokumentumfeldolgozás",
+		"研究检索": "Kutatás és visszakeresés",
+		"开发工具": "Fejlesztői eszközök",
+		"教学": "Tanítás",
+		"演示": "Előadás"
+	}
+}

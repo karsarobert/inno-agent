@@ -73,6 +73,20 @@ function readSkillMeta(skillDir) {
 	};
 }
 
+/** Optional localized display metadata shared by Skills and presets. */
+function readLocalizedMeta(itemDir) {
+	const file = join(itemDir, "i18n.json");
+	if (!existsSync(file)) return undefined;
+	try {
+		const value = JSON.parse(readFileSync(file, "utf-8"));
+		return value && typeof value.locales === "object" && !Array.isArray(value.locales)
+			? value.locales
+			: undefined;
+	} catch {
+		return undefined;
+	}
+}
+
 /**
  * Extract a single YAML frontmatter field by key. Supports inline values
  * (optionally quoted) and block scalars (>, |, >-, |- etc.). Mirrors the
@@ -113,7 +127,7 @@ function buildIndex() {
 			const dir = join(skillsRoot, entry.name);
 			if (!existsSync(join(dir, CATEGORY.skills.marker))) continue;
 			const meta = readSkillMeta(dir);
-			index.skills.push({ id: entry.name, name: entry.name, description: meta.description, category: meta.category || undefined });
+			index.skills.push({ id: entry.name, name: entry.name, description: meta.description, category: meta.category || undefined, locales: readLocalizedMeta(dir) });
 		}
 	}
 
@@ -133,6 +147,8 @@ function buildIndex() {
 					name: meta.name.trim(),
 					description: (meta.description ?? "").trim(),
 					icon: meta.icon?.trim() || undefined,
+					category: meta.category?.trim() || undefined,
+					locales: readLocalizedMeta(join(presetsRoot, entry.name)),
 				});
 			} catch {
 				// skip invalid preset.json

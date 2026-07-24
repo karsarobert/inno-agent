@@ -4,6 +4,8 @@ import type { RuntimePaths } from "../runtime.js";
 import type { WorkspaceMeta, WorkspaceRegistry } from "../workspace/workspace-registry.js";
 import type { RemoteContentSource } from "../content-source/index.js";
 import { mapWithConcurrency } from "../content-source/types.js";
+import { materializeLocalizedContent } from "../content-source/localized-files.js";
+import { localizeContentMetadata, parseContentLocalizationDocument, type ContentLocalizationDocument } from "../content-source/localized-metadata.js";
 import { logger } from "../logger.js";
 
 /**
@@ -54,7 +56,12 @@ export function bundledPresetsDir(paths: RuntimePaths): string {
 	return join(paths.codeDir, "presets");
 }
 
-function parsePresetMeta(rawText: string, id: string): PresetMeta | null {
+function parsePresetMeta(
+	rawText: string,
+	id: string,
+	contentLocale: string = "en",
+	localization: ContentLocalizationDocument | null = null,
+): PresetMeta | null {
 	try {
 		const raw = JSON.parse(rawText) as Partial<PresetMeta>;
 		const metaId = (raw.id ?? "").trim();
@@ -68,23 +75,27 @@ function parsePresetMeta(rawText: string, id: string): PresetMeta | null {
 			logger.warn({ id }, "preset.json missing name; skipping");
 			return null;
 		}
-		return {
+		return localizeContentMetadata({
 			id,
 			name,
 			description: (raw.description ?? "").trim(),
 			icon: raw.icon?.trim() || undefined,
 			category: raw.category?.trim() || undefined,
-		};
+		}, localization, contentLocale).metadata;
 	} catch (err) {
 		logger.warn({ err, id }, "failed to parse preset.json; skipping");
 		return null;
 	}
 }
 
-function readPresetMeta(dir: string, id: string): PresetMeta | null {
+function readPresetMeta(dir: string, id: string, contentLocale: string = "en"): PresetMeta | null {
 	const metaPath = join(dir, "preset.json");
 	if (!existsSync(metaPath)) return null;
-	return parsePresetMeta(readFileSync(metaPath, "utf-8"), id);
+	const localizationPath = join(dir, "i18n.json");
+	const localization = existsSync(localizationPath)
+		? parseContentLocalizationDocument(readFileSync(localizationPath, "utf-8"))
+		: null;
+	return parsePresetMeta(readFileSync(metaPath, "utf-8"), id, contentLocale, localization);
 }
 
 /**
@@ -92,7 +103,7 @@ function readPresetMeta(dir: string, id: string): PresetMeta | null {
  * bundled with the app (cache wins on id collision). Best-effort — invalid
  * presets are skipped. Used as a fallback when the remote hub is unreachable.
  */
-export function listPresets(paths: RuntimePaths): PresetMeta[] {
+export function listPresets(paths: RuntimePaths, contentLocale: string = "en"): PresetMeta[] {
 	const byId = new Map<string, PresetMeta>();
 	// Bundled first, then cache overrides (a downloaded preset is fresher).
 	for (const root of [bundledPresetsDir(paths), presetsDir(paths)]) {
@@ -101,7 +112,7 @@ export function listPresets(paths: RuntimePaths): PresetMeta[] {
 			if (!entry.isDirectory()) continue;
 			if (entry.name === "__MACOSX" || entry.name.startsWith(".") || entry.name.startsWith("_")) continue;
 			if (!isValidPresetId(entry.name)) continue;
-			const meta = readPresetMeta(join(root, entry.name), entry.name);
+			const meta = readPresetMeta(join(root, entry.name), entry.name, contentLocale);
 			if (meta) byId.set(meta.id, meta);
 		}
 	}
@@ -114,7 +125,7 @@ export function listPresets(paths: RuntimePaths): PresetMeta[] {
  * `preset.json` (GitHub). Best-effort: presets with invalid metadata are
  * skipped.
  */
-export async function listRemotePresets(source: RemoteContentSource, forceRefresh = false): Promise<PresetMeta[]> {
+export async function listRemotePresets(source: RemoteContentSource, forceRefresh = false, contentLocale: string = "en"): Promise<PresetMeta[]> {
 	const items = await source.listItems("presets", { forceRefresh });
 	// GitHub reads one preset.json per item over raw.githubusercontent.com, which
 	// throttles bursts (429). Cap concurrency so a large catalog doesn't trip the
@@ -123,13 +134,13 @@ export async function listRemotePresets(source: RemoteContentSource, forceRefres
 		// Bundle service ships metadata inline in index.json.
 		const m = item.meta;
 		if (m && typeof m.name === "string" && m.name.trim()) {
-			return {
+			return localizeContentMetadata({
 				id: item.name,
 				name: m.name.trim(),
 				description: typeof m.description === "string" ? m.description.trim() : "",
 				icon: typeof m.icon === "string" && m.icon.trim() ? m.icon.trim() : undefined,
 				category: typeof m.category === "string" && m.category.trim() ? m.category.trim() : undefined,
-			};
+			}, { locales: m.locales as ContentLocalizationDocument["locales"] }, contentLocale).metadata;
 		}
 		// GitHub: read the preset.json file.
 		const text = await source.readItemTextFile("presets", item.name, "preset.json");
@@ -137,7 +148,10 @@ export async function listRemotePresets(source: RemoteContentSource, forceRefres
 			logger.warn({ id: item.name }, "remote preset missing preset.json; skipping");
 			return null;
 		}
-		return parsePresetMeta(text, item.name);
+		const localization = parseContentLocalizationDocument(
+			await source.readItemTextFile("presets", item.name, "i18n.json"),
+		);
+		return parsePresetMeta(text, item.name, contentLocale, localization);
 	});
 	return metas.filter((m): m is PresetMeta => m !== null).sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -216,6 +230,7 @@ export function instantiatePreset(
 	paths: RuntimePaths,
 	registry: WorkspaceRegistry,
 	presetId: string,
+	contentLocale: string = "en",
 ): WorkspaceMeta {
 	const id = presetId.trim();
 	if (!isValidPresetId(id)) {
@@ -228,12 +243,12 @@ export function instantiatePreset(
 	if (rel.startsWith("..") || !existsSync(srcDir) || !statSync(srcDir).isDirectory()) {
 		throw new Error(`Preset not found in cache: ${presetId}`);
 	}
-	const meta = readPresetMeta(srcDir, id);
+	const meta = readPresetMeta(srcDir, id, contentLocale);
 	if (!meta) {
 		throw new Error(`Preset metadata invalid: ${presetId}`);
 	}
 
-	const { ws, created } = registry.ensurePresetWorkspace(id, meta.name);
+	const { ws, created } = registry.ensurePresetWorkspace(id, meta.name, contentLocale);
 	const destDir = registry.resolveWorkspaceDir(ws.id);
 	if (!destDir) {
 		throw new Error(`Failed to resolve workspace dir for ${ws.id}`);
@@ -241,7 +256,9 @@ export function instantiatePreset(
 	// Only seed the preset's files on first creation so later opens don't clobber
 	// the user's edits / conversation artifacts in that workspace.
 	if (created) {
-		copyPresetContents(srcDir, destDir);
+		materializeLocalizedContent(srcDir, destDir, "agent.md", contentLocale, {
+			excludeBaseEntries: ["preset.json", "i18n.json"],
+		});
 		logger.info({ presetId: id, workspaceId: ws.id }, "instantiated preset workspace");
 	} else {
 		logger.info({ presetId: id, workspaceId: ws.id }, "reused existing preset workspace");

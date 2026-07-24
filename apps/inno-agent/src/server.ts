@@ -58,6 +58,8 @@ import { DEFAULT_WORKSPACE_ID, TEMP_WORKSPACE_ID, WorkspaceRegistry } from "./wo
 import { listPresets, listRemotePresets, ensurePresetCached, instantiatePreset } from "./presets/preset-store.js";
 import { createContentSource, type RemoteContentSource } from "./content-source/index.js";
 import { mapWithConcurrency } from "./content-source/types.js";
+import { normalizeContentLocale } from "./content-source/content-locale.js";
+import { materializeLocalizedContent } from "./content-source/localized-files.js";
 import { RunRecordStore } from "./terminal/run-record-store.js";
 import { TerminalSessionManager } from "./terminal/terminal-session-manager.js";
 import type { ClientTerminalEvent, ServerTerminalEvent } from "./terminal/terminal-types.js";
@@ -1168,14 +1170,16 @@ async function listSkillLibrary(forceRefresh = false): Promise<SkillLibraryItem[
  * Downloads the item's files into a temp dir, then installs through the same
  * path as a zip upload (validates SKILL.md, normalizes frontmatter).
  */
-async function importSkillFromLibrary(skillName: string): Promise<{ name: string; filePath: string }> {
+async function importSkillFromLibrary(skillName: string, contentLocale: string): Promise<{ name: string; filePath: string }> {
 	const source = getContentSource();
 	const tempRoot = join(tmpdir(), `inno-libskill-${Date.now()}-${Math.random().toString(36).slice(2)}`);
 	const extractDir = join(tempRoot, "extract");
+	const materializedDir = join(tempRoot, "materialized");
 	ensureDir(extractDir);
 	try {
 		await source.downloadItem("skills", skillName, extractDir);
-		return installSkillFromExtractedDir(extractDir, slugifySkillName(skillName), skillsDir);
+		materializeLocalizedContent(extractDir, materializedDir, "SKILL.md", contentLocale, { excludeBaseEntries: ["i18n.json"] });
+		return installSkillFromExtractedDir(materializedDir, slugifySkillName(skillName), skillsDir);
 	} finally {
 		rmSync(tempRoot, { recursive: true, force: true });
 	}
@@ -2591,12 +2595,13 @@ const server = createServer(async (req, res) => {
 		if (method === "POST" && url === "/api/skill-library/import") {
 			const body = (await readBody(req)) as Record<string, unknown>;
 			const skillName = typeof body.name === "string" ? body.name.trim() : "";
+			const contentLocale = normalizeContentLocale(body.contentLocale) ?? "en";
 			if (!skillName) {
 				json(res, 400, { error: "Missing skill name" });
 				return;
 			}
 			try {
-				const installed = await importSkillFromLibrary(skillName);
+				const installed = await importSkillFromLibrary(skillName, contentLocale);
 				setSkillEnabled(installed.name, true);
 				const entry = listProjectSkills().find((s) => (s as { name: string }).name === installed.name);
 				json(res, 201, entry ?? { name: installed.name });
@@ -2962,6 +2967,7 @@ const server = createServer(async (req, res) => {
 			let workspaceId: string = TEMP_WORKSPACE_ID;
 			const explicitWorkspaceId = typeof body.workspaceId === "string" ? body.workspaceId.trim() : "";
 			const presetId = typeof body.presetId === "string" ? body.presetId.trim() : "";
+			const contentLocale = normalizeContentLocale(body.contentLocale) ?? "en";
 			const newWorkspaceSpec = body.newWorkspace && typeof body.newWorkspace === "object"
 				? body.newWorkspace as { name?: unknown; isTemp?: unknown }
 				: null;
@@ -2970,7 +2976,7 @@ const server = createServer(async (req, res) => {
 					// Ensure the preset's files are in the local cache (download on
 					// first use), then instantiate it into a fresh workspace.
 					await ensurePresetCached(paths, getContentSource(), presetId);
-					const created = instantiatePreset(paths, workspaceRegistry, presetId);
+					const created = instantiatePreset(paths, workspaceRegistry, presetId, contentLocale);
 					workspaceId = created.id;
 				} else if (newWorkspaceSpec) {
 					const created = workspaceRegistry.createWorkspace({
@@ -3705,8 +3711,9 @@ const server = createServer(async (req, res) => {
 
 		// --- Presets API (ready-to-use workspace templates) ---
 		// Local cache listing (offline fallback / already-downloaded presets).
-		if (method === "GET" && url === "/api/presets") {
-			json(res, 200, listPresets(paths));
+		if (method === "GET" && url.split("?")[0] === "/api/presets") {
+			const contentLocale = normalizeContentLocale(new URL(url, "http://localhost").searchParams.get("contentLocale")) ?? "en";
+			json(res, 200, listPresets(paths, contentLocale));
 			return;
 		}
 
@@ -3714,19 +3721,21 @@ const server = createServer(async (req, res) => {
 		// Falls back to the bundled/cached presets when the hub is empty or
 		// unreachable, so the shipped templates always appear.
 		if (method === "GET" && url.split("?")[0] === "/api/preset-library") {
-			const forceRefresh = new URL(url, "http://localhost").searchParams.get("refresh") === "1";
+			const params = new URL(url, "http://localhost").searchParams;
+			const forceRefresh = params.get("refresh") === "1";
+			const contentLocale = normalizeContentLocale(params.get("contentLocale")) ?? "en";
 			try {
-				const remote = await listRemotePresets(getContentSource(), forceRefresh);
+				const remote = await listRemotePresets(getContentSource(), forceRefresh, contentLocale);
 				if (remote.length > 0) {
-					const merged = new Map(listPresets(paths).map((preset) => [preset.id, preset]));
+					const merged = new Map(listPresets(paths, contentLocale).map((preset) => [preset.id, preset]));
 					for (const preset of remote) merged.set(preset.id, preset);
 					json(res, 200, Array.from(merged.values()).sort((a, b) => a.name.localeCompare(b.name)));
 				} else {
-					json(res, 200, listPresets(paths));
+					json(res, 200, listPresets(paths, contentLocale));
 				}
 			} catch (err) {
 				logger.warn({ err }, "failed to list preset library; falling back to bundled presets");
-				json(res, 200, listPresets(paths));
+				json(res, 200, listPresets(paths, contentLocale));
 			}
 			return;
 		}

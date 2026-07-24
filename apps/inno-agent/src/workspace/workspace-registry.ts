@@ -268,14 +268,14 @@ export class WorkspaceRegistry {
 
 	/**
 	 * Return (creating if needed) a stable workspace dedicated to a bundled
-	 * preset. Unlike a one-off `createWorkspace`, the id is derived from the
-	 * preset id (`preset-<presetId>`) so that repeatedly opening the same preset
-	 * task reuses one workspace — every conversation for that task is archived
-	 * together. `created` is true only on the first call (so the caller knows
+	 * preset and its selected content locale. Locales deliberately receive
+	 * distinct workspaces so changing language never overwrites a user's existing
+	 * preset files. `created` is true only on the first call (so the caller knows
 	 * when to seed the preset's files).
 	 */
-	ensurePresetWorkspace(presetId: string, name: string): { ws: WorkspaceMeta; created: boolean } {
-		const id = `preset-${presetId}`;
+	 ensurePresetWorkspace(presetId: string, name: string, contentLocale: string = "en"): { ws: WorkspaceMeta; created: boolean } {
+	 const locale = contentLocale.replace(/[^A-Za-z0-9-]/g, "-");
+	 const id = `preset-${presetId}-${locale}`;
 		const reg = this.loadRegistry();
 		const now = new Date().toISOString();
 		let ws = reg.workspaces.find((w) => w.id === id);
@@ -288,7 +288,7 @@ export class WorkspaceRegistry {
 		ws = {
 			id,
 			name,
-			relPath: join(".presets", presetId),
+			relPath: join(".presets", `${presetId}-${locale}`),
 			createdAt: now,
 			updatedAt: now,
 			isTemp: false,

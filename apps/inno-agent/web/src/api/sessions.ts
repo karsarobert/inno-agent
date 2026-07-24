@@ -32,6 +32,8 @@ export interface NewSessionResult {
 }
 
 export interface CreateSessionInput {
+	/** Language of a newly materialized Hub preset or Skill content tree. */
+	contentLocale?: "zh-CN" | "en" | "hu";
 	workspaceId?: string;
 	newWorkspace?: {
 		name?: string;

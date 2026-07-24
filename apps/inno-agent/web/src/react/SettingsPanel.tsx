@@ -10,6 +10,7 @@ import type { InnoModelInfo, InnoProviderModel as ProviderModel, InnoSettings, C
 import type { WikiStats } from "../types/wiki.js";
 import { useStoreSnapshot } from "./hooks.js";
 import { setLocale } from "../i18n/index.js";
+import { setContentLocale, useContentLocale, type ContentLocale } from "../i18n/content-locale.js";
 import { Switch } from "./ui/Switch.js";
 import { inputCls } from "./ui/input.js";
 import { checkboxCls } from "./ui/checkbox.js";
@@ -1171,6 +1172,7 @@ function SimpleModeSettings({ settings }: { settings: InnoSettings }) {
 
 export function SettingsPanel() {
 	const { t, i18n } = useTranslation();
+	const contentLocale = useContentLocale();
 	const [healthOk, setHealthOk] = useState(false);
 	const [wikiStats, setWikiStats] = useState<WikiStats | null>(null);
 	const [editingModel, setEditingModel] = useState<string | null>(null);
@@ -1205,10 +1207,23 @@ export function SettingsPanel() {
 								<select
 									className="rounded-md border border-[var(--inno-border)] bg-[var(--inno-surface)] px-2 py-1 text-xs"
 									value={i18n.language}
-									onChange={(e) => setLocale(e.target.value as "zh-CN" | "en")}
+									onChange={(e) => setLocale(e.target.value as "zh-CN" | "en" | "hu")}
 								>
 									<option value="zh-CN">{t("settings.languageOptions.zh-CN")}</option>
 									<option value="en">{t("settings.languageOptions.en")}</option>
+									<option value="hu">{t("settings.languageOptions.hu")}</option>
+								</select>
+							</label>
+							<label className="flex shrink-0 items-center gap-1.5 text-xs text-[var(--inno-text-muted)]">
+								<span>{t("settings.contentLanguage")}</span>
+								<select
+									className="rounded-md border border-[var(--inno-border)] bg-[var(--inno-surface)] px-2 py-1 text-xs"
+									value={contentLocale}
+									onChange={(e) => setContentLocale(e.target.value as ContentLocale)}
+								>
+									<option value="zh-CN">{t("settings.contentLanguageOptions.zh-CN")}</option>
+									<option value="en">{t("settings.contentLanguageOptions.en")}</option>
+									<option value="hu">{t("settings.contentLanguageOptions.hu")}</option>
 								</select>
 							</label>
 							<button className="shrink-0 rounded-md border border-[var(--inno-border)] bg-[var(--inno-surface)] px-3 py-1.5 text-sm text-[var(--inno-text-muted)] hover:bg-[var(--inno-surface-muted)] hover:text-[var(--inno-text)]" onClick={() => void settingsStore.load()}>

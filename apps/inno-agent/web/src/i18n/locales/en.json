@@ -442,7 +442,14 @@
 		"language": "Language",
 		"languageOptions": {
 			"zh-CN": "中文",
-			"en": "English"
+			"en": "English",
+			"hu": "Hungarian"
+		},
+		"contentLanguage": "Content language",
+		"contentLanguageOptions": {
+			"zh-CN": "Chinese",
+			"en": "English",
+			"hu": "Hungarian"
 		},
 		"theme": "Theme",
 		"themeOptions": {

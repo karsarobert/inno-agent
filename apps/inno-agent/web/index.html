@@ -5,9 +5,13 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Inno Agent</title>
 		<script>
-			// Apply theme before first paint to prevent flash of wrong theme (FOWT).
+			// Apply persisted UI state before first paint to prevent a language/theme flash.
 			(function () {
 				try {
+					var locale = localStorage.getItem("inno.locale");
+					if (locale === "zh-CN" || locale === "en" || locale === "hu") {
+						document.documentElement.lang = locale;
+					}
 					var t = localStorage.getItem("inno.theme") || "light";
 					var valid = ["light", "warm", "ocean", "innospark"];
 					if (valid.indexOf(t) === -1) t = "light";
