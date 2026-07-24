@@ -1,5 +1,7 @@
 # Inno Agent
 
+[中文](README.md) | [Magyar](README.hu.md)
+
 基于 PI SDK 的个人学习 Agent，支持多渠道交互（CLI / Web UI / 飞书 / 微信）、三层记忆系统（L1 学习者画像 + L2 Wiki 知识库 + L3 会话记录及跨对话检索）、定时任务调度、Practice Lab 网页终端。
 
 > 本文档聚焦后端开发与运行细节。项目整体介绍、架构和定位见仓库根目录的 [README.md](../../README.md)。

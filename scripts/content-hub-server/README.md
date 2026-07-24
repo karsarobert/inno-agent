@@ -1,5 +1,7 @@
 # Content Hub — 本地资源服务器:配置与使用
 
+[中文](README.md) | [Magyar](README.hu.md)
+
 一个**零依赖**的本地内容服务,让 inno-agent 从你自己的机器(而不是默认的公共 GitHub 仓库)拉取**技能库**和**工作区模板(预设)**。适合私有部署、离线使用、或想自己维护一套内容。
 
 - 服务脚本:`scripts/content-hub-server/server.mjs`(Node ≥ 20,仅用内置模块 + 系统 `tar`)

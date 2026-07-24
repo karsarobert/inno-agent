@@ -1,5 +1,7 @@
 # Inno Agent
 
+[English](README.md) | [Magyar](README.hu.md)
+
 > An open-source **personal learning agent** with a layered memory system, a proactive scheduler, multi-channel messaging, and a workspace-scoped Practice Lab — built on the [Pi coding-agent SDK](https://www.npmjs.com/package/@earendil-works/pi-coding-agent) **without modifying its kernel**.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)

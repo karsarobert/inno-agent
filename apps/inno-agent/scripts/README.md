@@ -1,5 +1,7 @@
 # Vendored scripts
 
+[English](README.md) | [Magyar](README.hu.md)
+
 ## `pptx_to_svg/` + `pptx_to_svg.py` + `console_encoding.py`
 
 Pure-Python PPTX → SVG converter, vendored from the
