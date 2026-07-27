@@ -458,6 +458,7 @@ export function ChatCenter() {
 		streamingActivity: chatStore.streamingActivity,
 		streamingActivityDetail: chatStore.streamingActivityDetail,
 		streamingError: chatStore.streamingError,
+		canReconnect: chatStore.canReconnect,
 		activeTools: chatStore.activeTools,
 		completedTools: chatStore.completedTools,
 		lastUserPrompt: chatStore.lastUserPrompt,
@@ -704,6 +705,10 @@ export function ChatCenter() {
 		chatStore.cancel();
 	}, []);
 
+	const handleReconnect = useCallback(() => {
+		void chatStore.reconnect();
+	}, []);
+
 	const handleRetry = useCallback(() => {
 		shouldStickToBottomRef.current = true;
 		void chatStore.retry();
@@ -891,13 +896,24 @@ export function ChatCenter() {
 				disabled={chat.isSending || isUploading}
 			/>
 			{chat.isSending ? (
-				<button
-					className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--inno-danger)] text-white transition-opacity hover:opacity-90 active:scale-[0.97]"
-					title={t("chat.stopGeneration")}
-					onClick={handleStop}
-				>
-					<Square size={16} />
-				</button>
+				<>
+					{chat.canReconnect ? (
+						<button
+							className="inno-icon-button flex h-9 w-9 shrink-0 rounded-md"
+							title={t("chat.reconnect", "重新连接")}
+							onClick={handleReconnect}
+						>
+							<RotateCcw size={16} />
+						</button>
+					) : null}
+					<button
+						className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--inno-danger)] text-white transition-opacity hover:opacity-90 active:scale-[0.97]"
+						title={t("chat.stopGeneration")}
+						onClick={handleStop}
+					>
+						<Square size={16} />
+					</button>
+				</>
 			) : (
 				<>
 					{chat.lastUserPrompt ? (
