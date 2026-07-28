@@ -16,10 +16,7 @@ const expectedAssetLinks = [
 ];
 
 describe("Hungarian skill tutorial documentation", () => {
-	// TODO: A 02–06 képernyőképek még nem készültek el (Playwright futtatási
-	// jogosultsági korlát a delegált alfolyamatban). A teszt újraaktiválása
-	// a képek elkészülte után szükséges.
-	it.skip("provides the complete Hungarian guide and its referenced screenshots", () => {
+	it("provides the complete Hungarian guide and its referenced screenshots", () => {
 		expect(() => accessSync(guidePath, constants.R_OK)).not.toThrow();
 
 		const guide = readFileSync(guidePath, "utf8");
