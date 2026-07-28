@@ -56,4 +56,31 @@ describe("C++ learning coach workspace template", () => {
 			expect(exercise).not.toMatch(hanCharacter);
 		}
 	});
+
+	it("provides local, data-minimal progress tracking and teacher-report tools", () => {
+		for (const skillPath of [
+			"locales/hu/.skills/cpp-progress-tracker/SKILL.md",
+			"locales/hu/.skills/cpp-submission-review/SKILL.md",
+			"locales/hu/.skills/teacher-report-generator/SKILL.md",
+		]) {
+			expect(existsSync(join(templateDir, skillPath))).toBe(true);
+			expect(read(skillPath)).not.toMatch(hanCharacter);
+		}
+
+		const progress = JSON.parse(read("progress.json")) as {
+			schemaVersion: number;
+			localOnly: boolean;
+			studentAlias: string | null;
+			modules: Record<string, unknown>;
+			competencies: Record<string, unknown>;
+		};
+		expect(progress).toMatchObject({ schemaVersion: 1, localOnly: true, studentAlias: null });
+		expect(progress.modules).toBeTypeOf("object");
+		expect(progress.competencies).toBeTypeOf("object");
+
+		const reportTemplate = read("locales/hu/templates/teacher-report.md");
+		expect(reportTemplate).toContain("## Teljesített modulok");
+		expect(reportTemplate).toContain("## Következő javasolt lépés");
+		expect(reportTemplate).toContain("A tanuló által jóváhagyott összesítés");
+	});
 });
