@@ -5,20 +5,21 @@ import en from "./locales/en.json";
 import hu from "./locales/hu.json";
 
 const STORAGE_KEY = "inno.locale";
+export const DEFAULT_UI_LOCALE = "hu";
 
 function syncDocumentLanguage(locale: string): void {
 	if (typeof document !== "undefined") document.documentElement.lang = locale;
 }
 
 function getInitialLocale(): string {
-	if (typeof window === "undefined") return "zh-CN";
+	if (typeof window === "undefined") return DEFAULT_UI_LOCALE;
 	try {
 		const saved = window.localStorage.getItem(STORAGE_KEY);
 		if (saved === "zh-CN" || saved === "en" || saved === "hu") return saved;
 	} catch {
 		// Storage can be unavailable in privacy-restricted browser contexts.
 	}
-	return "zh-CN";
+	return DEFAULT_UI_LOCALE;
 }
 
 void i18n.use(initReactI18next).init({
@@ -28,7 +29,7 @@ void i18n.use(initReactI18next).init({
 		hu: { translation: hu },
 	},
 	lng: getInitialLocale(),
-	fallbackLng: "zh-CN",
+	fallbackLng: DEFAULT_UI_LOCALE,
 	interpolation: { escapeValue: false },
 	returnNull: false,
 });
@@ -49,7 +50,7 @@ export function setLocale(lng: "zh-CN" | "en" | "hu"): void {
 }
 
 export function currentLocale(): string {
-	return i18n.language || "zh-CN";
+	return i18n.language || DEFAULT_UI_LOCALE;
 }
 
 export default i18n;

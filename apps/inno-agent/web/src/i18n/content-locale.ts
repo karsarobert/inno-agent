@@ -5,18 +5,19 @@ export type ContentLocale = (typeof CONTENT_LOCALES)[number];
 
 const STORAGE_KEY = "inno.content-locale";
 const CHANGE_EVENT = "inno-content-locale-change";
+export const DEFAULT_CONTENT_LOCALE: ContentLocale = "hu";
 
 function isContentLocale(value: string | null): value is ContentLocale {
 	return value === "zh-CN" || value === "en" || value === "hu";
 }
 
 export function getContentLocale(): ContentLocale {
-	if (typeof window === "undefined") return "en";
+	if (typeof window === "undefined") return DEFAULT_CONTENT_LOCALE;
 	try {
 		const saved = window.localStorage.getItem(STORAGE_KEY);
-		return isContentLocale(saved) ? saved : "en";
+		return isContentLocale(saved) ? saved : DEFAULT_CONTENT_LOCALE;
 	} catch {
-		return "en";
+		return DEFAULT_CONTENT_LOCALE;
 	}
 }
 
@@ -43,5 +44,5 @@ function subscribe(onStoreChange: () => void): () => void {
 }
 
 export function useContentLocale(): ContentLocale {
-	return useSyncExternalStore(subscribe, getContentLocale, () => "en");
+	return useSyncExternalStore(subscribe, getContentLocale, () => DEFAULT_CONTENT_LOCALE);
 }
