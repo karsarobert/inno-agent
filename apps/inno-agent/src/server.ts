@@ -60,6 +60,7 @@ import { createContentSource, type RemoteContentSource } from "./content-source/
 import { mapWithConcurrency } from "./content-source/types.js";
 import { normalizeContentLocale } from "./content-source/content-locale.js";
 import { materializeLocalizedContent } from "./content-source/localized-files.js";
+import { localizeContentMetadata, parseContentLocalizationDocument } from "./content-source/localized-metadata.js";
 import { RunRecordStore } from "./terminal/run-record-store.js";
 import { TerminalSessionManager } from "./terminal/terminal-session-manager.js";
 import type { ClientTerminalEvent, ServerTerminalEvent } from "./terminal/terminal-types.js";
@@ -1054,6 +1055,8 @@ function installSkillMarkdown(fileName: string, data: Buffer, targetRoot: string
 interface SkillLibraryItem {
 	/** Directory name under the skills path (used as the skill name). */
 	name: string;
+	/** Localized name displayed in the library UI; `name` remains the stable id. */
+	displayName?: string;
 	/** description from SKILL.md frontmatter (may be empty). */
 	description: string;
 	/** Whether a skill with this slug already exists locally. */
@@ -1130,7 +1133,7 @@ function extractFrontmatterFields(content: string): { description: string; categ
  * List installable skills from the remote skill library via the content source.
  * Descriptions are best-effort (read from each SKILL.md / item meta).
  */
-async function listSkillLibrary(forceRefresh = false): Promise<SkillLibraryItem[]> {
+async function listSkillLibrary(forceRefresh = false, contentLocale: string = "en"): Promise<SkillLibraryItem[]> {
 	const source = getContentSource();
 	const items = await source.listItems("skills", { forceRefresh });
 
@@ -1155,10 +1158,17 @@ async function listSkillLibrary(forceRefresh = false): Promise<SkillLibraryItem[
 				if (!category) category = fields.category;
 			}
 		}
-		return {
-			name: item.name,
+		const localized = localizeContentMetadata({
+			id: item.name,
+			name: typeof item.meta?.name === "string" ? item.meta.name : item.name,
 			description,
 			category: category || undefined,
+		}, parseContentLocalizationDocument(JSON.stringify({ locales: item.meta?.locales })), contentLocale);
+		return {
+			name: item.name,
+			displayName: localized.metadata.name,
+			description: localized.metadata.description,
+			category: localized.metadata.category,
 			installed: localNames.has(slugifySkillName(item.name)),
 		};
 	});
@@ -2582,9 +2592,11 @@ const server = createServer(async (req, res) => {
 
 		// --- Remote skill library (GitHub) ---
 		if (method === "GET" && url.split("?")[0] === "/api/skill-library") {
-			const forceRefresh = new URL(url, "http://localhost").searchParams.get("refresh") === "1";
+			const params = new URL(url, "http://localhost").searchParams;
+			const forceRefresh = params.get("refresh") === "1";
+			const contentLocale = normalizeContentLocale(params.get("contentLocale")) ?? "en";
 			try {
-				json(res, 200, await listSkillLibrary(forceRefresh));
+				json(res, 200, await listSkillLibrary(forceRefresh, contentLocale));
 			} catch (err) {
 				logger.warn({ err }, "failed to list skill library");
 				json(res, 502, { error: err instanceof Error ? err.message : "Failed to load skill library" });

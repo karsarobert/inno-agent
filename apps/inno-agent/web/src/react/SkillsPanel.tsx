@@ -26,6 +26,7 @@ import { type ArboristNode, toArboristNodes } from "../types/workspace.js";
 import { normalizeMarkdownMath } from "../utils/markdown-math.js";
 import { groupByCategory, matchesQuery } from "../utils/category-grouping.js";
 import { useStoreSnapshot } from "./hooks.js";
+import { useContentLocale } from "../i18n/content-locale.js";
 import { checkboxCls } from "./ui/checkbox.js";
 import { Spinner } from "./ui/Spinner.js";
 import "@earendil-works/pi-web-ui";
@@ -378,6 +379,7 @@ function SkillRow({ skill, onClick }: { skill: SkillInfo; onClick: () => void })
 
 function SkillLibraryModal({ onClose }: { onClose: () => void }) {
 	const { t } = useTranslation();
+	const contentLocale = useContentLocale();
 	const state = useStoreSnapshot(skillsStore, () => ({
 		library: skillsStore.library,
 		isLoading: skillsStore.isLoadingLibrary,
@@ -385,6 +387,10 @@ function SkillLibraryModal({ onClose }: { onClose: () => void }) {
 		importing: skillsStore.importing,
 	}));
 	const [query, setQuery] = useState("");
+
+	useEffect(() => {
+		void skillsStore.loadLibrary(false, contentLocale);
+	}, [contentLocale]);
 
 	const uncategorizedLabel = t("skills.uncategorized");
 	const groups = useMemo(
@@ -412,7 +418,7 @@ function SkillLibraryModal({ onClose }: { onClose: () => void }) {
 						<button
 							className="flex h-7 w-7 items-center justify-center rounded-md text-[var(--inno-text-subtle)] hover:bg-[var(--inno-surface-muted)] hover:text-[var(--inno-text)]"
 							title={t("skills.reload")}
-							onClick={() => void skillsStore.loadLibrary(true)}
+							onClick={() => void skillsStore.loadLibrary(true, contentLocale)}
 						>
 							<RefreshCw size={14} />
 						</button>
@@ -474,7 +480,7 @@ function SkillLibraryModal({ onClose }: { onClose: () => void }) {
 									return (
 										<div key={item.name} className="flex items-start gap-3 px-4 py-3">
 											<div className="min-w-0 flex-1">
-												<div className="truncate text-sm font-medium text-[var(--inno-text)]">{item.name}</div>
+												<div className="truncate text-sm font-medium text-[var(--inno-text)]">{item.displayName ?? item.name}</div>
 												{item.description && <div className="mt-0.5 line-clamp-3 text-xs leading-relaxed text-[var(--inno-text-muted)]">{item.description}</div>}
 											</div>
 											{item.installed ? (
@@ -507,6 +513,7 @@ function SkillLibraryModal({ onClose }: { onClose: () => void }) {
 
 export function SkillsPanel() {
 	const { t } = useTranslation();
+	const contentLocale = useContentLocale();
 	const uploadRef = useRef<HTMLInputElement | null>(null);
 	const state = useStoreSnapshot(skillsStore, () => ({
 		skills: skillsStore.skills,
@@ -558,7 +565,7 @@ export function SkillsPanel() {
 					<h3 className="min-w-0 truncate text-sm font-medium text-[var(--inno-text)]">{t("skills.title")}</h3>
 					<div className="flex shrink-0 items-center gap-1.5">
 						<input ref={uploadRef} type="file" className="hidden" accept=".zip,application/zip,.md,text/markdown,text/plain" onChange={handleUpload} />
-						<button className="flex h-7 items-center gap-1 rounded-md px-2 text-xs text-[var(--inno-text-muted)] hover:bg-[var(--inno-surface-muted)] hover:text-[var(--inno-text)]" title={t("skills.library")} onClick={() => skillsStore.openLibrary()}>
+						<button className="flex h-7 items-center gap-1 rounded-md px-2 text-xs text-[var(--inno-text-muted)] hover:bg-[var(--inno-surface-muted)] hover:text-[var(--inno-text)]" title={t("skills.library")} onClick={() => skillsStore.openLibrary(contentLocale)}>
 							<Library size={14} />
 							<span className="hidden @[26rem]/skillspanel:inline">{t("skills.library")}</span>
 						</button>

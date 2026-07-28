@@ -6,14 +6,16 @@ export async function listSkills(): Promise<SkillInfo[]> {
 	return apiFetch<SkillInfo[]>("/api/skills");
 }
 
-export async function listSkillLibrary(forceRefresh = false): Promise<SkillLibraryItem[]> {
-	return apiFetch<SkillLibraryItem[]>(`/api/skill-library${forceRefresh ? "?refresh=1" : ""}`);
+export async function listSkillLibrary(forceRefresh = false, contentLocale = "en"): Promise<SkillLibraryItem[]> {
+	const params = new URLSearchParams({ contentLocale });
+	if (forceRefresh) params.set("refresh", "1");
+	return apiFetch<SkillLibraryItem[]>(`/api/skill-library?${params.toString()}`);
 }
 
-export async function importSkillFromLibrary(name: string): Promise<SkillInfo> {
+export async function importSkillFromLibrary(name: string, contentLocale = "en"): Promise<SkillInfo> {
 	return apiFetch<SkillInfo>("/api/skill-library/import", {
 		method: "POST",
-		body: JSON.stringify({ name }),
+		body: JSON.stringify({ name, contentLocale }),
 	});
 }
 

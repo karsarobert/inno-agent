@@ -12,6 +12,7 @@ export interface SkillInfo {
 
 export interface SkillLibraryItem {
 	name: string;
+	displayName?: string;
 	description: string;
 	installed: boolean;
 	category?: string;

@@ -26,6 +26,7 @@ class SkillsStoreImpl extends EventEmitter<SkillsStoreEvents> {
 	// Remote skill library state
 	libraryOpen = false;
 	library: SkillLibraryItem[] = [];
+	libraryLocale = "en";
 	isLoadingLibrary = false;
 	libraryError: string | null = null;
 	/** Names currently being imported (for per-row spinners). */
@@ -87,10 +88,11 @@ class SkillsStoreImpl extends EventEmitter<SkillsStoreEvents> {
 
 	/* --- Remote skill library --- */
 
-	openLibrary() {
+	openLibrary(contentLocale = "en") {
 		this.libraryOpen = true;
+		this.libraryLocale = contentLocale;
 		this.emit("change", undefined);
-		void this.loadLibrary();
+		void this.loadLibrary(false, contentLocale);
 	}
 
 	closeLibrary() {
@@ -98,12 +100,13 @@ class SkillsStoreImpl extends EventEmitter<SkillsStoreEvents> {
 		this.emit("change", undefined);
 	}
 
-	async loadLibrary(forceRefresh = false) {
+	async loadLibrary(forceRefresh = false, contentLocale = this.libraryLocale) {
+		this.libraryLocale = contentLocale;
 		this.isLoadingLibrary = true;
 		this.libraryError = null;
 		this.emit("change", undefined);
 		try {
-			this.library = await listSkillLibrary(forceRefresh);
+			this.library = await listSkillLibrary(forceRefresh, contentLocale);
 		} catch (err) {
 			this.libraryError = err instanceof Error ? err.message : "Failed to load skill library";
 			this.library = [];
@@ -119,7 +122,7 @@ class SkillsStoreImpl extends EventEmitter<SkillsStoreEvents> {
 		this.libraryError = null;
 		this.emit("change", undefined);
 		try {
-			const skill = await importSkillFromLibrary(name);
+			const skill = await importSkillFromLibrary(name, this.libraryLocale);
 			this.skills = [skill, ...this.skills.filter((item) => item.name !== skill.name)].sort((a, b) => a.name.localeCompare(b.name));
 			this.library = this.library.map((item) => (item.name === name ? { ...item, installed: true } : item));
 		} catch (err) {
