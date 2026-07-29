@@ -412,6 +412,13 @@
 			"saved": "Mentve",
 			"clear": "Törlés"
 		},
+		"tavily": {
+			"title": "Webes keresés (Tavily)",
+			"desc": "Internetkeresési lehetőséget ad az ügynöknek. API-kulcsot a tavily.com oldalon igényelhet (tvly- előtaggal). A web_search eszköz a beállításig nem érhető el.",
+			"placeholder": "tvly-…",
+			"saved": "Mentve",
+			"clear": "Törlés"
+		},
 		"form": {
 			"providerId": "Szolgáltató azonosítója",
 			"baseUrl": "Alap URL",
