@@ -1,6 +1,6 @@
 import { defineTool, type ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { Type } from "typebox";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 import type { WorkspaceRegistry } from "../workspace/workspace-registry.js";
 import { logger } from "../logger.js";
@@ -67,6 +67,10 @@ export function createPracticeTools(deps: PracticeToolDeps): ToolDefinition[] {
 				const within = relative(resolve(workspaceRoot), abs);
 				if (within.startsWith("..")) {
 					errors.push(`Path escapes workspace: ${file.path}`);
+					continue;
+				}
+				if (existsSync(abs)) {
+					errors.push(`Refusing to overwrite existing workspace file: ${file.path}`);
 					continue;
 				}
 				try {

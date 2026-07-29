@@ -37,11 +37,27 @@ export interface ProcessedChunk {
 }
 
 const SENTINEL_PREFIX = "__INNO_RUN_DONE_";
-/** Max bytes we hold in the trailing-window buffer while scanning. */
-const SENTINEL_SCAN_WINDOW = SENTINEL_PREFIX.length + 32 + 1 + 10 + 1;
 
 function escapeRegex(value: string): string {
 	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Return where the trailing fragment that might still become a sentinel
+ * begins. Interactive program output must be sent immediately; retaining a
+ * fixed-size trailing window hides short prompts such as `Enter a value:`.
+ */
+function trailingSentinelStart(value: string, tag: string): number {
+	const completeTagStart = value.lastIndexOf(tag);
+	if (completeTagStart >= 0 && /^\s*-?\d*$/.test(value.slice(completeTagStart + tag.length))) {
+		return completeTagStart;
+	}
+
+	const maxPrefixLength = Math.min(tag.length - 1, value.length);
+	for (let length = maxPrefixLength; length > 0; length--) {
+		if (value.endsWith(tag.slice(0, length))) return value.length - length;
+	}
+	return value.length;
 }
 
 /**
@@ -193,8 +209,9 @@ export class TerminalSessionManager {
 		const m = pattern.exec(buf);
 
 		if (!m) {
-			// Hold the trailing window so we don't miss a split marker.
-			const cut = Math.max(0, buf.length - SENTINEL_SCAN_WINDOW);
+			// Keep only a genuine sentinel prefix/candidate. A fixed trailing
+			// window would hide short interactive output until program exit.
+			const cut = trailingSentinelStart(buf, ts.sentinelTag);
 			const out = buf.slice(0, cut);
 			ts.sentinelBuffer = buf.slice(cut);
 			return { cleaned: out };

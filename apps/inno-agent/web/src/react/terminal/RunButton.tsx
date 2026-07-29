@@ -1,16 +1,7 @@
 import { Play } from "lucide-react";
 import { useCallback } from "react";
 import { terminalStore } from "../../stores/terminal-store.js";
-
-function defaultCommand(relPath: string): string | null {
-	const lower = relPath.toLowerCase();
-	const quoted = /[\s'"]/.test(relPath) ? `"${relPath.replace(/"/g, '\\"')}"` : relPath;
-	if (lower.endsWith(".py")) return `python ${quoted}`;
-	if (lower.endsWith(".js") || lower.endsWith(".mjs") || lower.endsWith(".cjs")) return `node ${quoted}`;
-	if (lower.endsWith(".ts") || lower.endsWith(".tsx")) return `npx tsx ${quoted}`;
-	if (lower.endsWith(".sh") || lower.endsWith(".bash") || lower.endsWith(".zsh")) return `bash ${quoted}`;
-	return null;
-}
+import { defaultRunCommand } from "../../utils/run-command.js";
 
 interface RunButtonProps {
 	filePath: string;
@@ -18,7 +9,7 @@ interface RunButtonProps {
 }
 
 export function RunButton({ filePath, className }: RunButtonProps) {
-	const command = defaultCommand(filePath);
+	const command = defaultRunCommand(filePath);
 	const handleClick = useCallback(() => {
 		if (!command) return;
 		terminalStore.setOpen(true);

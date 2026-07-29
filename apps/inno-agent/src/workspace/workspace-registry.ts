@@ -122,7 +122,7 @@ export class WorkspaceRegistry {
 		if (!reg.workspaces.some((w) => w.id === TEMP_WORKSPACE_ID)) {
 			reg.workspaces.push({
 				id: TEMP_WORKSPACE_ID,
-				name: "临时工作区",
+				name: "Temporary Workspace",
 				relPath: TEMP_WORKSPACE_REL_PATH,
 				createdAt: now,
 				updatedAt: now,
@@ -203,7 +203,7 @@ export class WorkspaceRegistry {
 			// Fallback: bootstrap was skipped. Create the shared tmp entry now.
 			const tmp: WorkspaceMeta = {
 				id: TEMP_WORKSPACE_ID,
-				name: "临时工作区",
+				name: "Temporary Workspace",
 				relPath: TEMP_WORKSPACE_REL_PATH,
 				createdAt: now,
 				updatedAt: now,
@@ -215,7 +215,7 @@ export class WorkspaceRegistry {
 			return tmp;
 		}
 
-		const rawName = input.name?.trim() || "工作区";
+		const rawName = input.name?.trim() || "Workspace";
 		const slugBase = slugify(rawName) || "workspace";
 		// Always append a hash so we never collide and never need -2/-3 suffixes.
 		const id = `${slugBase}-${shortHash()}`;

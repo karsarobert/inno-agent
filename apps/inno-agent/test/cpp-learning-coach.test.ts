@@ -28,6 +28,10 @@ describe("C++ learning coach workspace template", () => {
 		const agent = read("locales/hu/agent.md");
 		expect(agent).toContain("C++20");
 		expect(agent).toContain("ne add meg rögtön a teljes megoldást");
+		expect(agent).toContain("Minden új lecke előtt");
+		expect(agent).toContain("cpp-progress-tracker");
+		expect(agent).toContain("cpp-submission-review");
+		expect(agent).toContain("teacher-report-generator");
 		expect(agent).not.toMatch(hanCharacter);
 
 		for (const skillPath of [
@@ -39,16 +43,45 @@ describe("C++ learning coach workspace template", () => {
 			expect(existsSync(join(templateDir, skillPath))).toBe(true);
 			expect(read(skillPath)).not.toMatch(hanCharacter);
 		}
+
+		const tutorSkill = read("locales/hu/.skills/cpp-tutor/SKILL.md");
+		expect(tutorSkill).toContain("create_practice_lab");
+		expect(tutorSkill).toContain("submissions/");
+		expect(tutorSkill).toContain("ne a chatben kiírt teljes kódvázzal");
+		expect(tutorSkill).toContain("Megírtam");
 	});
 
 	it("provides a CMake starter and progressively structured beginner exercises", () => {
 		expect(read("starter/CMakeLists.txt")).toContain("CXX_STANDARD 20");
 		expect(read("starter/src/main.cpp")).toContain("int main()");
 
+		const coursePlan = read("kurzus-terv.md");
+		expect(coursePlan).toContain("10 alkalmas");
+		expect(coursePlan).toContain("LearnCProgramming.pdf");
+		expect(coursePlan).toContain("C++Programming.pdf` 1. fejezet");
+		expect(coursePlan).toContain("Elméleti anyag nélkül nem indulhat új lecke");
+
+		const firstLessonTheory = read("locales/hu/lessons/00-algorithmic-thinking/theory.md");
+		expect(firstLessonTheory).toContain("Algoritmikus gondolkodás");
+		expect(firstLessonTheory).toContain("C++Programming.pdf");
+		expect(firstLessonTheory).toContain("Modern C++ előretekintő");
+		expect(firstLessonTheory).toContain("std::cin");
+		expect(firstLessonTheory).not.toMatch(hanCharacter);
+
 		for (const exercisePath of [
 			"exercises/00-basics/01-hello-and-variables.md",
 			"exercises/01-control-flow/01-temperature-check.md",
 			"exercises/02-functions/01-number-statistics.md",
+			"exercises/00-algorithmic-thinking/01-snack-automata.md",
+			"exercises/01-variables-datatypes/01-kor-terulet-konverzio.md",
+			"exercises/02-control-flow/01-eredmeny-ertekelo.md",
+			"exercises/03-arrays-pointers/01-meresi-adatok.md",
+			"exercises/04-strings/01-szoveg-statisztika.md",
+			"exercises/05-functions/01-teglatest-szamolo.md",
+			"exercises/06-structs/01-tanuloi-nyilvantartas.md",
+			"exercises/07-oop/01-homerseklet-meres.md",
+			"exercises/08-file-io/01-meresi-naplo.md",
+			"exercises/09-main-argv-project/01-kiadas-osszesito.md",
 		]) {
 			const exercise = read(exercisePath);
 			expect(exercise).toContain("## Feladat");
@@ -77,6 +110,8 @@ describe("C++ learning coach workspace template", () => {
 		expect(progress).toMatchObject({ schemaVersion: 1, localOnly: true, studentAlias: null });
 		expect(progress.modules).toBeTypeOf("object");
 		expect(progress.competencies).toBeTypeOf("object");
+		expect(Object.keys(progress.modules)).toHaveLength(10);
+		expect(progress.modules).toHaveProperty("09-main-argv-project");
 
 		const reportTemplate = read("locales/hu/templates/teacher-report.md");
 		expect(reportTemplate).toContain("## Teljesített modulok");

@@ -55,6 +55,7 @@ import { logger } from "./logger.js";
 import { applyRuntimeEnvironment, parseRuntimeArgs, resolveRuntimePaths } from "./runtime.js";
 import { questionBridge, type QuestionBridgeResult } from "./agent/question-bridge.js";
 import { streamRegistry, type SessionStreamState, type StreamPersistence } from "./chat/stream-registry.js";
+import { buildSessionTopicPrompt } from "./chat/session-topic.js";
 import { DEFAULT_WORKSPACE_ID, TEMP_WORKSPACE_ID, WorkspaceRegistry } from "./workspace/workspace-registry.js";
 import { listPresets, listRemotePresets, ensurePresetCached, instantiatePreset } from "./presets/preset-store.js";
 import { createContentSource, type RemoteContentSource } from "./content-source/index.js";
@@ -2201,22 +2202,8 @@ function fallbackTopicFromMessages(messages: SessionMessageSummary[], summary: S
 }
 
 async function generateSessionTopic(summary: SessionSummary, messages: SessionMessageSummary[]): Promise<string> {
-	const excerpt = messages
-		.slice(0, 4)
-		.map((message) => `${message.role === "user" ? "用户" : "助手"}: ${message.content.replace(/\s+/g, " ").trim()}`)
-		.join("\n")
-		.slice(0, 800);
-
-	if (!excerpt) return fallbackTopicFromMessages(messages, summary);
-
-	const prompt = `请根据下面的对话内容生成一个简短中文话题标题。
-要求：
-- 只输出标题本身，不要解释
-- 8 到 16 个中文字符左右
-- 不要使用引号、句号或冒号
-
-对话：
-${excerpt}`;
+	const prompt = buildSessionTopicPrompt(messages);
+	if (!prompt) return fallbackTopicFromMessages(messages, summary);
 
 	try {
 		const generated = cleanGeneratedTopic(await completePromptOnce(prompt, 64));

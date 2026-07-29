@@ -33,6 +33,7 @@ import { triggerDownload } from "../api/workspace.js";
 import type { SessionChannel, SessionMeta } from "../api/sessions.js";
 import { useStoreSnapshot } from "./hooks.js";
 import { Spinner } from "./ui/Spinner.js";
+import { formatSessionTime } from "../utils/session-time.js";
 
 interface SessionSidebarProps {
 	collapsed: boolean;
@@ -63,20 +64,6 @@ function readWorkspaceCustomOrder(): string[] {
 }
 
 /* ── helpers ── */
-
-function formatTime(iso: string): string {
-	try {
-		const d = new Date(iso);
-		const now = new Date();
-		const isToday = d.toDateString() === now.toDateString();
-		if (isToday) {
-			return d.toLocaleString("zh-CN", { hour: "2-digit", minute: "2-digit" });
-		}
-		return d.toLocaleString("zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-	} catch {
-		return iso;
-	}
-}
 
 function channelLabel(channel: SessionChannel): string {
 	const labels: Record<string, string> = {
@@ -364,7 +351,7 @@ function SessionCard({
 	onDelete: () => void;
 	onExport: () => void;
 }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	return (
 		<div
 			className={`group/card relative mb-1 w-full cursor-pointer rounded-lg border px-2.5 py-2 text-left transition-all duration-150 ${
@@ -403,7 +390,7 @@ function SessionCard({
 						{session.name}
 					</div>
 				)}
-				<span className="inno-sidebar-meta shrink-0 pt-0.5 tabular-nums text-[var(--inno-text-subtle)]">{formatTime(session.updatedAt)}</span>
+				<span className="inno-sidebar-meta shrink-0 pt-0.5 tabular-nums text-[var(--inno-text-subtle)]">{formatSessionTime(session.updatedAt, i18n.language)}</span>
 			</div>
 
 			{/* Preview */}
@@ -478,7 +465,7 @@ function SessionCard({
 /* ── Main sidebar ── */
 
 export function SessionSidebar({ collapsed }: SessionSidebarProps) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editingName, setEditingName] = useState("");
 	const [generatingId, setGeneratingId] = useState<string | null>(null);
@@ -923,7 +910,7 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 												<span className="truncate">{ws.name}</span>
 											</span>
 										) : null}
-										<span className="inno-sidebar-meta tabular-nums text-[var(--inno-text-subtle)]">{formatTime(session.updatedAt)}</span>
+										<span className="inno-sidebar-meta tabular-nums text-[var(--inno-text-subtle)]">{formatSessionTime(session.updatedAt, i18n.language)}</span>
 									</div>
 								</div>
 							);

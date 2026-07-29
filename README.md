@@ -60,6 +60,7 @@ Az Inno Agent más megközelítést alkalmaz:
 
 - **Node.js >= 20.6.0** (a beszélgetések közötti L3-visszakeresés a beépített `node:sqlite` modult használja, amely Node 22.5+-tól érhető el; régebbi futtatókörnyezeteken az L3 felidézés fokozatosan korlátozott, az ügynök többi része azonban rendesen fut).
 - **npm** (munkaterületeket használ; nincs szükség további csomagkezelőre).
+- **C++ Tanulócoach Run-gombja:** a szervert futtató gépen a `PATH`-ból elérhető, C++20-kompatibilis `g++` szükséges. Ubuntu/Debian rendszeren: `sudo apt install g++`. Ez csak a C++ fájlok böngészőből indított fordításához és futtatásához szükséges; az Inno Agent alapfunkcióihoz nem.
 
 ---
 

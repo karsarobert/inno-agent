@@ -49,6 +49,11 @@ General-purpose coding agents optimize for open-ended software engineering. Educ
 - 🌍 **i18n & themes** — Chinese/English UI, four themes.
 - 🛡️ **Optional OS-level sandbox** — gate bash/file operations via [pi-sandbox](https://github.com/carderne/pi-sandbox); optional subagents via `pi-subagents`.
 
+## Requirements
+
+- **Node.js >= 20.6.0** and **npm**.
+- **C++ Learning Coach Run button:** a C++20-compatible `g++` executable must be available on the server host's `PATH`. On Ubuntu/Debian: `sudo apt install g++`. This is only required to compile and run C++ workspace files from the browser.
+
 ## Quick Start
 
 ### Option A — Desktop app (easiest)
