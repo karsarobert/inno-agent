@@ -3742,17 +3742,28 @@ const server = createServer(async (req, res) => {
 		// Local cache listing (offline fallback / already-downloaded presets).
 		if (method === "GET" && url.split("?")[0] === "/api/presets") {
 			const contentLocale = normalizeContentLocale(new URL(url, "http://localhost").searchParams.get("contentLocale")) ?? "en";
+			// With the hub disabled (type "none") there are no preset cards at
+			// all — not even the bundled fallback presets.
+			if (config.contentHub?.type === "none") {
+				json(res, 200, []);
+				return;
+			}
 			json(res, 200, listPresets(paths, contentLocale));
 			return;
 		}
 
 		// Live catalog from the remote content hub (Simple Mode preset cards).
 		// Falls back to the bundled/cached presets when the hub is empty or
-		// unreachable, so the shipped templates always appear.
+		// unreachable, so the shipped templates always appear — except when the
+		// hub is disabled entirely (type "none"), which must stay card-free.
 		if (method === "GET" && url.split("?")[0] === "/api/preset-library") {
 			const params = new URL(url, "http://localhost").searchParams;
 			const forceRefresh = params.get("refresh") === "1";
 			const contentLocale = normalizeContentLocale(params.get("contentLocale")) ?? "en";
+			if (config.contentHub?.type === "none") {
+				json(res, 200, []);
+				return;
+			}
 			try {
 				const remote = await listRemotePresets(getContentSource(), forceRefresh, contentLocale);
 				if (remote.length > 0) {
