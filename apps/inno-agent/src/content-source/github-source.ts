@@ -6,6 +6,7 @@ import { logger } from "../logger.js";
 import {
 	CATEGORY_MARKER,
 	isSafeItemName,
+	mapWithConcurrency,
 	type ContentCategory,
 	type ListOpts,
 	type RemoteContentSource,
@@ -154,7 +155,26 @@ export class GitHubContentSource implements RemoteContentSource {
 				names.add(dir);
 			}
 		}
-		return Array.from(names).map((name) => ({ name })).sort((a, b) => a.name.localeCompare(b.name));
+		// Attach i18n.json metadata (localized name/description/category) so the
+		// skill library can show the requested content locale instead of the base
+		// (often Chinese) frontmatter. Raw fetches do not count against the API
+		// rate limit, and a missing i18n.json yields meta: undefined.
+		const items = await mapWithConcurrency(Array.from(names).sort(), 5, async (name) => {
+			const i18n = await this.readItemTextFile(category, name, "i18n.json");
+			let meta: Record<string, unknown> | undefined;
+			if (i18n) {
+				try {
+					const parsed = JSON.parse(i18n) as { locales?: Record<string, unknown> };
+					if (parsed && typeof parsed === "object" && parsed.locales) {
+						meta = { locales: parsed.locales };
+					}
+				} catch {
+					// malformed i18n.json — fall back to base metadata
+				}
+			}
+			return { name, meta };
+		});
+		return items.sort((a, b) => a.name.localeCompare(b.name));
 	}
 
 	async readItemTextFile(category: ContentCategory, name: string, relPath: string): Promise<string | null> {

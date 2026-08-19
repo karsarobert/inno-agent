@@ -1173,7 +1173,12 @@ async function listSkillLibrary(forceRefresh = false, contentLocale: string = "e
 		let description = typeof item.meta?.description === "string" ? item.meta.description : "";
 		let category = typeof item.meta?.category === "string" ? item.meta.category.trim() : "";
 		if (!description || !category) {
-			const md = await source.readItemTextFile("skills", item.name, "SKILL.md");
+			// Prefer the localized SKILL.md for the requested content locale
+			// (locales/<locale>/SKILL.md), falling back to the base file —
+			// e.g. the GitHub hub ships Hungarian docs under locales/hu/.
+			const localizedRel = contentLocale === "hu" || contentLocale === "zh-CN" ? `locales/${contentLocale}/SKILL.md` : null;
+			let md = localizedRel ? await source.readItemTextFile("skills", item.name, localizedRel) : null;
+			if (!md) md = await source.readItemTextFile("skills", item.name, "SKILL.md");
 			if (md) {
 				const fields = extractFrontmatterFields(md);
 				if (!description) description = fields.description;
