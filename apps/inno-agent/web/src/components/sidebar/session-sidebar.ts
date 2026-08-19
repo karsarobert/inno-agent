@@ -3,6 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { appStore } from "../../stores/app-store.js";
 import { chatStore } from "../../stores/chat-store.js";
 import { sessionsStore } from "../../stores/sessions-store.js";
+import i18n from "../../i18n/index.js";
 import type { SessionChannel, SessionMeta } from "../../api/sessions.js";
 
 @customElement("inno-session-sidebar")
@@ -40,7 +41,7 @@ export class SessionSidebar extends LitElement {
 
 	private _formatTime(iso: string): string {
 		try {
-			return new Date(iso).toLocaleString("zh-CN", {
+			return new Date(iso).toLocaleString(i18n.language, {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit",

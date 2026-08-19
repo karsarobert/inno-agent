@@ -43,10 +43,10 @@ const defaultForm: JobFormState = {
 	enabled: true,
 };
 
-function formatDate(iso?: string): string {
+function formatDate(iso?: string, locale: string = "hu"): string {
 	if (!iso) return "-";
 	try {
-		return new Date(iso).toLocaleString("zh-CN", {
+		return new Date(iso).toLocaleString(locale, {
 			month: "short",
 			day: "numeric",
 			hour: "2-digit",
@@ -58,7 +58,7 @@ function formatDate(iso?: string): string {
 }
 
 export function JobsPanel() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [showForm, setShowForm] = useState(false);
 	const [editingJob, setEditingJob] = useState<ScheduledJob | null>(null);
 	const [form, setForm] = useState<JobFormState>(defaultForm);
@@ -208,8 +208,8 @@ export function JobsPanel() {
 												</span>
 											</div>
 											<div className="mt-1 text-xs text-[var(--inno-text-muted)]">
-												{t("jobs.lastRun", { time: job.lastRunAt ? formatDate(job.lastRunAt) : t("jobs.never") })}
-												{job.nextRunAt ? ` · ${t("jobs.nextRun", { time: formatDate(job.nextRunAt) })}` : ""}
+												{t("jobs.lastRun", { time: job.lastRunAt ? formatDate(job.lastRunAt, i18n.language) : t("jobs.never") })}
+												{job.nextRunAt ? ` · ${t("jobs.nextRun", { time: formatDate(job.nextRunAt, i18n.language) })}` : ""}
 											</div>
 										</div>
 									</div>

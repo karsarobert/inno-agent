@@ -18,10 +18,10 @@ const GOAL_TYPES: GoalType[] = ["skill", "concept", "project", "exam", "habit"];
 const GOAL_STATUSES: GoalStatus[] = ["active", "paused", "completed", "archived"];
 const MISC_STATUSES: MisconceptionStatus[] = ["active", "repairing", "resolved", "stale"];
 
-function formatDate(iso?: string): string {
+function formatDate(iso?: string, locale: string = "hu"): string {
 	if (!iso) return "-";
 	try {
-		return new Date(iso).toLocaleString("zh-CN", {
+		return new Date(iso).toLocaleString(locale, {
 			month: "short",
 			day: "numeric",
 			hour: "2-digit",
@@ -543,7 +543,7 @@ function KnowledgeSection() {
 }
 
 function KnowledgeRow({ state }: { state: KnowledgeState }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [expanded, setExpanded] = useState(false);
 	const [draft, setDraft] = useState<{ diagnosis: string; nextActions: string[]; mastery: number }>({
 		diagnosis: state.diagnosis,
@@ -589,7 +589,7 @@ function KnowledgeRow({ state }: { state: KnowledgeState }) {
 					</div>
 					<div className="mt-0.5 text-[10px] text-[var(--inno-text-muted)]">{pct}%</div>
 				</div>
-				<div className="text-right text-xs text-[var(--inno-text-muted)]">{state.review_due_at ? formatDate(state.review_due_at) : "-"}</div>
+				<div className="text-right text-xs text-[var(--inno-text-muted)]">{state.review_due_at ? formatDate(state.review_due_at, i18n.language) : "-"}</div>
 			</button>
 			{expanded ? (
 				<div className="border-t border-[var(--inno-border)] p-3">
@@ -666,7 +666,7 @@ function MisconceptionsSection() {
 }
 
 function MisconceptionRow({ item }: { item: Misconception }) {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const [draft, setDraft] = useState({ status: item.status, severity: item.severity, repair: item.repair_strategy });
 	const [saving, setSaving] = useState(false);
 	const [dirty, setDirty] = useState(false);
@@ -692,7 +692,7 @@ function MisconceptionRow({ item }: { item: Misconception }) {
 	return (
 		<div className="rounded-lg bg-[var(--inno-surface)] p-3">
 			<div className="mb-2 text-sm text-[var(--inno-text)]">{item.description}</div>
-			<div className="mb-2 text-xs text-[var(--inno-text-muted)]">{item.concept_id} · {formatDate(item.last_seen_at)}</div>
+			<div className="mb-2 text-xs text-[var(--inno-text-muted)]">{item.concept_id} · {formatDate(item.last_seen_at, i18n.language)}</div>
 			<div className="grid grid-cols-2 gap-2">
 				<label className="block text-xs">
 					<span className="mb-0.5 block text-[var(--inno-text-muted)]">{t("profile.misconceptions.status")}</span>
@@ -842,7 +842,7 @@ function ChipInput({ label, values, onChange, placeholder }: { label: string; va
 }
 
 export function LearnerProfilePanel() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const state = useStoreSnapshot(learnerStore, () => ({
 		profile: learnerStore.profile,
 		isLoading: learnerStore.isLoading,
@@ -862,7 +862,7 @@ export function LearnerProfilePanel() {
 						<p className="text-xs text-[var(--inno-text-muted)]">{t("profile.subtitle")}</p>
 						{state.profile ? (
 							<p className="mt-1 text-xs text-[var(--inno-text-muted)]">
-								{t("profile.version", { version: state.profile.version, updated: formatDate(state.profile.updated_at) })}
+								{t("profile.version", { version: state.profile.version, updated: formatDate(state.profile.updated_at, i18n.language) })}
 							</p>
 						) : null}
 					</div>
