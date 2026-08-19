@@ -561,7 +561,8 @@
 			"jumpToTurn": "Ugrás a forduláshoz {{count}}: {{title}}",
 			"turn": "Forgassa el a {{count}}-t",
 			"emptyTurn": "Ebben a körben nincs szöveg"
-		}
+		},
+		"reconnect": "Újracsatlakozás"
 	},
 	"question": {
 		"typeSomething": "Írj be valamit…",

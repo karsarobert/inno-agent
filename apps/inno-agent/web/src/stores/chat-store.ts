@@ -93,7 +93,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		}];
 		this.resetTransientStreamState();
 		this.isSending = true;
-		this.setStreamingActivity("正在分析请求");
+		this.setStreamingActivity("Kérés elemzése…");
 		this.wikiInvalidated = false;
 		const controller = new AbortController();
 		this.abortController = controller;
@@ -115,14 +115,14 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 				await this._handleStreamEnvelope(owner, envelope);
 			}
 			if (this.owns(owner) && !owner.terminalEvent) {
-				await this.reconnectOwner(owner, new Error("实时连接提前结束"));
+				await this.reconnectOwner(owner, new Error("A valós idejű kapcsolat idő előtt megszakadt"));
 			}
 		} catch (err) {
 			if (!this.owns(owner) || owner.controller.signal.aborted || owner.terminalEvent) return;
 			const bound = await this.bindOwnerFromStatus(owner);
 			if (!this.owns(owner)) return;
 			if (!bound) {
-				const message = err instanceof Error ? err.message : "提交请求失败";
+				const message = err instanceof Error ? err.message : "A kérés elküldése sikertelen";
 				this.materializeTransientTurn(owner, message);
 				this.finalizeOwner(owner);
 				return;
@@ -141,7 +141,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		owner.cancellationRequested = true;
 		owner.phase = "cancelling";
 		this.canReconnect = false;
-		this.setStreamingActivity("正在取消");
+		this.setStreamingActivity("Mégse…");
 		this.emit("change", undefined);
 		void this.cancelOwnedTurn(owner);
 	}
@@ -169,15 +169,15 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		try {
 			if (!owner.turnId) await this.bindOwnerFromStatus(owner);
 			if (!this.owns(owner)) return;
-			if (!owner.turnId) throw new Error("尚未确认服务端任务，请重试停止操作");
+			if (!owner.turnId) throw new Error("A szerveroldali feladat még nincs megerősítve; próbálja újra a leállítást");
 			await abortChat(owner.sessionId, owner.turnId);
 			if (!this.owns(owner)) return;
-			this.setStreamingActivity("正在等待任务停止");
+			this.setStreamingActivity("A feladat leállítására vár…");
 			this.emit("change", undefined);
 		} catch (err) {
 			if (this.owns(owner)) {
 				this.canReconnect = true;
-				this.streamingError = err instanceof Error ? err.message : "无法停止该任务";
+				this.streamingError = err instanceof Error ? err.message : "A feladat nem állítható le";
 				this.emit("change", undefined);
 			}
 		}
@@ -192,14 +192,14 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		const stream = snapshot ?? (await getChatStatus(sessionId)).stream;
 		if (!stream || !["queued", "running"].includes(stream.status)) return;
 		if (!Number.isInteger(stream.baselineMessageCount) || stream.baselineMessageCount < 0) {
-			this.streamingError = "该任务缺少恢复基线，无法安全恢复实时内容";
+			this.streamingError = "A feladathoz hiányzik a helyreállítási alap; a valós idejű tartalom nem állítható vissza biztonságosan";
 			this.emit("change", undefined);
 			return;
 		}
 		this.currentSessionContext = sessionId;
 		this.resetTransientStreamState();
 		this.isSending = true;
-		this.streamingActivity = "正在恢复生成";
+		this.streamingActivity = "Generálás folytatása…";
 		this.detachMode = false;
 		const controller = new AbortController();
 		this.abortController = controller;
@@ -235,7 +235,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 				await this._handleStreamEnvelope(owner, envelope);
 			}
 			if (this.owns(owner) && !owner.terminalEvent) {
-				await this.reconnectOwner(owner, new Error("恢复连接提前结束"));
+				await this.reconnectOwner(owner, new Error("A helyreállítási kapcsolat idő előtt megszakadt"));
 			}
 		} catch (err) {
 			if (this.owns(owner) && !controller.signal.aborted && !owner.terminalEvent) {
@@ -261,7 +261,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		if (owner.terminalEvent) {
 			await this.handleTerminal(owner, owner.terminalEvent);
 		} else {
-			await this.reconnectOwner(owner, new Error("用户请求重新连接"));
+			await this.reconnectOwner(owner, new Error("A felhasználó újracsatlakozást kért"));
 		}
 	}
 
@@ -289,7 +289,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 	private async reconnectOwner(owner: ActiveStreamOwner, cause: unknown): Promise<void> {
 		if (!this.owns(owner) || owner.terminalEvent) return;
 		owner.phase = "reconnecting";
-		this.setStreamingActivity("连接中断，正在重连");
+		this.setStreamingActivity("A kapcsolat megszakadt, újracsatlakozás…");
 		this.emit("change", undefined);
 		let lastError = cause;
 		for (let attempt = 0; attempt < RECONNECT_DELAYS_MS.length; attempt++) {
@@ -300,7 +300,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 				if (!owner.turnId || !this.owns(owner)) return;
 				const status = await getChatStatus(owner.sessionId);
 				if (!status.stream || status.stream.turnId !== owner.turnId || status.stream.clientRequestId !== owner.clientRequestId) {
-					throw new Error("服务端任务状态已不可用");
+					throw new Error("A szerveroldali feladat állapota már nem érhető el");
 				}
 				const reconnectController = new AbortController();
 				owner.controller = reconnectController;
@@ -309,13 +309,13 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 					await this._handleStreamEnvelope(owner, envelope);
 				}
 				if (!this.owns(owner) || owner.terminalEvent) return;
-				lastError = new Error("重连后事件流提前结束");
+				lastError = new Error("Újracsatlakozás után az eseményfolyam idő előtt véget ért");
 			} catch (error) {
 				if (!this.owns(owner) || owner.controller.signal.aborted) return;
 				lastError = error;
 			}
 		}
-		this.failRecovery(owner, lastError, "实时连接恢复失败，请重新连接");
+		this.failRecovery(owner, lastError, "A valós idejű kapcsolat helyreállítása sikertelen; csatlakozzon újra");
 	}
 
 	private async _handleStreamEnvelope(owner: ActiveStreamOwner, envelope: StreamEventEnvelope): Promise<void> {
@@ -334,14 +334,14 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		owner.terminalEvent = terminal;
 		owner.phase = "reloading_history";
 		if (!terminal.persisted) {
-			const message = terminal.type === "error" ? terminal.message : terminal.message ?? "最终记录尚未确认";
+			const message = terminal.type === "error" ? terminal.message : terminal.message ?? "A végleges rekord még nincs megerősítve";
 			this.materializeTransientTurn(owner, message);
 			this.finalizeOwner(owner);
 			return;
 		}
 		const loaded = await this.reloadCanonicalHistory(owner, terminal.finalMessageCount, terminal.finalSessionRevision);
 		if (loaded) this.finalizeOwner(owner);
-		else this.failRecovery(owner, new Error("最终记录尚未确认"), "最终记录尚未确认，请重新加载");
+		else this.failRecovery(owner, new Error("A végleges rekord még nincs megerősítve"), "A végleges rekord még nincs megerősítve; töltse újra");
 	}
 
 	private async reloadCanonicalHistory(owner: ActiveStreamOwner, finalMessageCount?: number, finalRevision?: string): Promise<boolean> {
@@ -407,12 +407,12 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 	private _handleStreamEvent(event: ChatStreamEvent, owner: ActiveStreamOwner) {
 		switch (event.type) {
 			case "stream_state":
-				this.setStreamingActivity(event.status === "queued" ? "等待执行" : "正在分析请求");
+				this.setStreamingActivity(event.status === "queued" ? "Végrehajtásra vár…" : "Kérés elemzése…");
 				this.emit("change", undefined);
 				break;
 			case "text_delta":
 				this.streamingText += event.delta;
-				if (!this.workspacePreviewId) this.setStreamingActivity("正在组织回复");
+				if (!this.workspacePreviewId) this.setStreamingActivity("Válasz összeállítása…");
 				this.scheduleStreamChange();
 				break;
 			case "thinking_delta":
@@ -538,7 +538,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 
 	private maybeStartFileToolPreview(toolCallId: string, toolName: string, args: unknown): void {
 		if (!isFileWritingTool(toolName)) {
-			this.setStreamingActivity("正在执行工具", toolName);
+			this.setStreamingActivity("Eszköz végrehajtása", toolName);
 			return;
 		}
 		this.maybePrepareFileToolPreview(toolCallId, toolName, args);
@@ -567,9 +567,9 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		const id = `tool-${toolCallId}`;
 		const title = resolvedPath
 			? `${fileToolActionLabel(toolName)} ${resolvedPath}`
-			: `${fileToolActionLabel(toolName)}文件`;
+			: `${fileToolActionLabel(toolName)} fájl`;
 		const language = resolvedPath ? languageFromPath(resolvedPath) : "plaintext";
-		const stage = hasContent ? "正在生成内容" : "正在准备文件";
+		const stage = hasContent ? "Tartalom generálása…" : "Fájl előkészítése…";
 		this.setStreamingActivity(stage, resolvedPath ?? "");
 		this.streamingTarget = "workspace";
 		this.workspacePreviewId = id;
@@ -614,7 +614,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		this.streamingTarget = "chat";
 		if (!isError && filePath) {
 			this.completedFileToolIds.add(toolCallId);
-			this.setStreamingActivity("正在刷新文件预览", filePath);
+			this.setStreamingActivity("Fájlelőnézet frissítése…", filePath);
 			void openChangedWorkspacePath(filePath, isActivePreview ? previewId : undefined, () => this.owns(owner));
 		}
 	}
@@ -624,7 +624,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 		const eventPreviewId = event.toolCallId ? `tool-${event.toolCallId}` : null;
 		const previewId = eventPreviewId && this.workspacePreviewId === eventPreviewId ? eventPreviewId : null;
 		const target = pickOpenableWorkspaceChange(event.changes);
-		this.setStreamingActivity("正在刷新文件预览", target?.path ?? "");
+		this.setStreamingActivity("Fájlelőnézet frissítése…", target?.path ?? "");
 		if (previewId) workspaceStore.finishStreamingPreview(previewId, "done");
 		if (previewId) {
 			this.streamingTarget = "chat";
@@ -678,7 +678,7 @@ export class ChatStoreImpl extends EventEmitter<ChatStoreEvents> {
 			await submitChatQuestion(owner.sessionId, owner.turnId, questionId, result);
 		} catch (err) {
 			if (this.owns(owner)) {
-				this.streamingError = err instanceof Error ? err.message : "提交回答失败";
+				this.streamingError = err instanceof Error ? err.message : "A válasz elküldése sikertelen";
 				this.emit("change", undefined);
 			}
 		}
@@ -761,20 +761,20 @@ function isFileWritingTool(toolName: string): boolean {
 
 function fileToolActionLabel(toolName: string): string {
 	const name = toolName.toLowerCase();
-	if (name.includes("edit") || name.includes("patch")) return "正在修改";
-	if (name.includes("rename") || name.includes("move")) return "正在移动";
-	if (name.includes("delete") || name.includes("remove")) return "正在删除";
-	if (name.includes("upload")) return "正在上传";
-	return "正在写入";
+	if (name.includes("edit") || name.includes("patch")) return "Módosítás…";
+	if (name.includes("rename") || name.includes("move")) return "Áthelyezés…";
+	if (name.includes("delete") || name.includes("remove")) return "Törlés…";
+	if (name.includes("upload")) return "Feltöltés…";
+	return "Írás…";
 }
 
 function fileToolExecutionLabel(toolName: string): string {
 	const name = toolName.toLowerCase();
-	if (name.includes("edit") || name.includes("patch")) return "正在应用修改";
-	if (name.includes("rename") || name.includes("move")) return "正在移动文件";
-	if (name.includes("delete") || name.includes("remove")) return "正在删除文件";
-	if (name.includes("upload")) return "正在上传文件";
-	return "正在写入磁盘";
+	if (name.includes("edit") || name.includes("patch")) return "Módosítások alkalmazása…";
+	if (name.includes("rename") || name.includes("move")) return "Fájl áthelyezése…";
+	if (name.includes("delete") || name.includes("remove")) return "Fájl törlése…";
+	if (name.includes("upload")) return "Fájl feltöltése…";
+	return "Írás lemezre…";
 }
 
 function extractToolFilePath(args: unknown): string | undefined {
@@ -957,15 +957,15 @@ function compactToolPayload(value: unknown): unknown {
 function compactValue(value: unknown, seen: WeakSet<object>, depth: number): unknown {
 	if (typeof value === "string") {
 		if (value.length <= 1600) return value;
-		return `${value.slice(0, 1600)}\n\n[已省略 ${value.length - 1600} 个字符]`;
+		return `${value.slice(0, 1600)}\n\n[elhagyva: ${value.length - 1600} karakter]`;
 	}
 	if (value == null || typeof value !== "object") return value;
-	if (seen.has(value)) return "[循环引用]";
+	if (seen.has(value)) return "[Ciklikus hivatkozás]";
 	seen.add(value);
-	if (depth >= 4) return "[内容层级较深，已折叠]";
+	if (depth >= 4) return "[A tartalom túl mély, összecsukva]";
 	if (Array.isArray(value)) {
 		const items = value.slice(0, 24).map((item) => compactValue(item, seen, depth + 1));
-		if (value.length > 24) items.push(`[已省略 ${value.length - 24} 项]`);
+		if (value.length > 24) items.push(`[elhagyva: ${value.length - 24} elem]`);
 		return items;
 	}
 	const record = value as Record<string, unknown>;
@@ -975,7 +975,7 @@ function compactValue(value: unknown, seen: WeakSet<object>, depth: number): unk
 		result[key] = compactValue(item, seen, depth + 1);
 	}
 	const remaining = Object.keys(record).length - entries.length;
-	if (remaining > 0) result.__truncated = `已省略 ${remaining} 个字段`;
+	if (remaining > 0) result.__truncated = `elhagyva: ${remaining} mező`;
 	return result;
 }
 

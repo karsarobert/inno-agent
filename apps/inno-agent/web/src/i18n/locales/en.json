@@ -561,7 +561,8 @@
 			"jumpToTurn": "Jump to turn {{count}}: {{title}}",
 			"turn": "Turn {{count}}",
 			"emptyTurn": "No text in this turn"
-		}
+		},
+		"reconnect": "Reconnect"
 	},
 	"question": {
 		"typeSomething": "Type something…",

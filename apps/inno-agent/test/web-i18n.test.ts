@@ -21,4 +21,12 @@ describe("Hungarian UI catalog", () => {
 		expect(hu.settings.contentLanguage).toBe("Tartalom nyelve");
 		expect(hu.settings.languageOptions.hu).toBe("Magyar");
 	});
+
+	it("keeps the Hungarian catalog free of Chinese fallback text", () => {
+		const chinese = /[\u4e00-\u9fff]/;
+		const offenders = leafPaths(hu)
+			.map((path) => ({ path, value: path.split(".").reduce<unknown>((acc, key) => (acc as Record<string, unknown>)?.[key], hu) as string }))
+			.filter(({ value }) => chinese.test(value));
+		expect(offenders.map((o) => o.path)).toEqual([]);
+	});
 });

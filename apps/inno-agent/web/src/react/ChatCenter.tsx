@@ -43,6 +43,15 @@ const CHANNEL_BADGE_CLASS: Record<string, string> = {
 	wechat: "bg-lime-50 text-lime-500",
 };
 
+/** Localized display names for internal tool ids shown in the chat UI. */
+const TOOL_DISPLAY_NAMES: Record<string, string> = {
+	ask_user_question: "Kérdés a felhasználónak",
+};
+
+function toolDisplayName(toolName: string): string {
+	return TOOL_DISPLAY_NAMES[toolName] ?? toolName;
+}
+
 const CHANNEL_LABEL: Record<string, string> = {
 	cli: "CLI",
 	web: "Web",
@@ -164,7 +173,7 @@ function ToolRecordDetails({ tool, className }: { tool: ChatToolRecord; classNam
 	return (
 		<details className={className} onToggle={(e) => setOpen(e.currentTarget.open)}>
 			<summary className={tool.isError ? "cursor-pointer break-words text-[var(--inno-danger)] [overflow-wrap:anywhere]" : "cursor-pointer break-words text-[var(--inno-text-muted)] [overflow-wrap:anywhere]"}>
-				{tool.toolName}
+				{toolDisplayName(tool.toolName)}
 			</summary>
 			{open ? (
 				<pre className="mt-1 max-h-40 max-w-full overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] [overflow-wrap:anywhere]">{detail}</pre>
@@ -1125,7 +1134,7 @@ export function ChatCenter() {
 								{chat.activeTools.map((tool) => (
 									<div key={tool.toolCallId} className="flex min-w-0 items-center gap-2 text-[var(--inno-text-muted)]">
 										<Spinner size={12} className="shrink-0" />
-										<span className="min-w-0 break-words font-mono text-xs [overflow-wrap:anywhere]">{tool.toolName}</span>
+										<span className="min-w-0 break-words font-mono text-xs [overflow-wrap:anywhere]">{toolDisplayName(tool.toolName)}</span>
 									</div>
 								))}
 							</div>
