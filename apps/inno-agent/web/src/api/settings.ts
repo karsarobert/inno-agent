@@ -87,7 +87,7 @@ export async function saveTavilySettings(apiKey: string): Promise<InnoSettings> 
 }
 
 export interface ContentHubPayload {
-	type: "github" | "bundle";
+	type: "github" | "bundle" | "none";
 	owner?: string;
 	repo?: string;
 	ref?: string;

@@ -786,7 +786,7 @@ function ContentHubSettings({ settings }: { settings: InnoSettings }) {
 	const { t } = useTranslation();
 	const hub = settings.contentHub;
 	const [open, setOpen] = useState(false);
-	const [type, setType] = useState<"github" | "bundle">(hub?.type ?? "github");
+	const [type, setType] = useState<"github" | "bundle" | "none">(hub?.type ?? "github");
 	const [owner, setOwner] = useState(hub?.owner ?? "");
 	const [repo, setRepo] = useState(hub?.repo ?? "");
 	const [ref, setRef] = useState(hub?.ref ?? "");
@@ -834,7 +834,9 @@ function ContentHubSettings({ settings }: { settings: InnoSettings }) {
 
 	const sourceLabel = type === "github"
 		? `GitHub · ${owner || "?"}/${repo || "?"}`
-		: `${t("settings.contentHub.bundle", "自托管服务")} · ${baseUrl || "?"}`;
+		: type === "bundle"
+			? `${t("settings.contentHub.bundle", "自托管服务")} · ${baseUrl || "?"}`
+			: t("settings.contentHub.none", "Letiltva");
 
 	return (
 		<div className="min-w-0 rounded-lg bg-[var(--inno-surface)] p-4">
@@ -866,9 +868,15 @@ function ContentHubSettings({ settings }: { settings: InnoSettings }) {
 						>
 							{t("settings.contentHub.bundle", "自托管服务")}
 						</button>
-					</div>
+						<button
+							onClick={() => setType("none")}
+							className={`flex h-7 items-center rounded-md border px-2.5 text-xs ${type === "none" ? "border-[var(--inno-accent)] bg-[var(--inno-accent-soft)] text-[var(--inno-accent)]" : "border-[var(--inno-border)] text-[var(--inno-text-muted)] hover:bg-[var(--inno-surface-muted)]"}`}
+						>
+							{t("settings.contentHub.none", "Letiltva")}
+						</button>
+						</div>
 
-					{type === "github" ? (
+						{type === "github" ? (
 						<>
 							<div className="grid min-w-0 grid-cols-[repeat(auto-fit,minmax(9rem,1fr))] gap-2">
 								<input className={inputCls} value={owner} onChange={(e) => { setOwner(e.target.value); setSaved(false); }} placeholder="owner" autoComplete="off" />

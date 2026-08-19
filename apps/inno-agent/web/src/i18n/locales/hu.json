@@ -511,7 +511,8 @@
 			"title": "Tartalomközpont (készségtár + előre beállított értékek)",
 			"desc": "A készségkönyvtár és az előre beállított munkaterületek innen kerülnek lekérésre. Alapértelmezésben a nyilvános repo; váltson egy privát GitHub-repóra vagy egy saját üzemeltetésű szolgáltatásra.",
 			"bundle": "Önálló szolgáltatás",
-			"tokenPlaceholder": "Hozzáférési token (privát repo / felső határ, opcionális)"
+			"tokenPlaceholder": "Hozzáférési token (privát repo / felső határ, opcionális)",
+			"none": "Nincs (kikapcsolva)"
 		},
 		"feishu": {
 			"qrRegister": "Szkennelés kötéshez",

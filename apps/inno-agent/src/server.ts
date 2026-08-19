@@ -4279,7 +4279,7 @@ const server = createServer(async (req, res) => {
 			const incomingToken = typeof body.token === "string" ? body.token.trim() : "";
 			const token = incomingToken.startsWith("****") ? current.token : incomingToken;
 			config.contentHub = normalizeContentHubConfig({
-				type: body.type === "bundle" ? "bundle" : "github",
+				type: body.type === "bundle" ? "bundle" : body.type === "none" ? "none" : "github",
 				owner: str("owner", current.owner),
 				repo: str("repo", current.repo),
 				ref: str("ref", current.ref),

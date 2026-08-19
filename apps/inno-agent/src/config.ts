@@ -77,9 +77,11 @@ export interface InnoSimpleModeConfig {
  *   - "bundle": a self-hosted service exposing `GET {baseUrl}/index.json` and
  *     `GET {baseUrl}/{presets|skills}/{id}.tar.gz`. `token` (if set) is sent as
  *     a Bearer credential. Avoids GitHub rate limits for private deployments.
+ *   - "none": the hub is disabled entirely — no skill library, no preset
+ *     cards. Use for a clean, content-free installation.
  */
 export interface InnoContentHubConfig {
-	type: "github" | "bundle";
+	type: "github" | "bundle" | "none";
 	/** GitHub repo owner (type: "github"). */
 	owner: string;
 	/** GitHub repo name (type: "github"). */
@@ -266,7 +268,19 @@ export function normalizeContentHubConfig(
 	hub: Partial<InnoContentHubConfig> | undefined,
 	legacyGithubToken?: string,
 ): InnoContentHubConfig {
-	const type = hub?.type === "bundle" ? "bundle" : "github";
+	const type = hub?.type === "bundle" ? "bundle" : hub?.type === "none" ? "none" : "github";
+	if (type === "none") {
+		return {
+			type: "none",
+			owner: "",
+			repo: "",
+			ref: "",
+			skillsPath: "",
+			presetsPath: "",
+			baseUrl: "",
+			token: "",
+		};
+	}
 	const trimmed = (v: string | undefined, fallback: string) => (v?.trim() ? v.trim() : fallback);
 	return {
 		type,

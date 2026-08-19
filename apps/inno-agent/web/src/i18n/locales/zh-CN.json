@@ -511,7 +511,8 @@
 			"title": "内容源(技能库 + 预设)",
 			"desc": "技能库和预设工作区从这里拉取。默认公共仓库,可改为私有 GitHub 仓库或自托管服务。",
 			"bundle": "自托管服务",
-			"tokenPlaceholder": "访问令牌(私有仓库 / 提额,可选)"
+			"tokenPlaceholder": "访问令牌(私有仓库 / 提额,可选)",
+			"none": "无(禁用)"
 		},
 		"feishu": {
 			"qrRegister": "扫码绑定",

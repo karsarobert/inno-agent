@@ -511,7 +511,8 @@
 			"title": "Content Hub (skill library + presets)",
 			"desc": "The skill library and preset workspaces are fetched from here. Defaults to the public repo; switch to a private GitHub repo or a self-hosted service.",
 			"bundle": "Self-hosted service",
-			"tokenPlaceholder": "Access token (private repo / higher limit, optional)"
+			"tokenPlaceholder": "Access token (private repo / higher limit, optional)",
+			"none": "None (disabled)"
 		},
 		"feishu": {
 			"qrRegister": "Scan to Bind",
