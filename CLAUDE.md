@@ -285,7 +285,7 @@ Static frontend is served from `paths.webDistDir = apps/inno-agent/web/dist` whe
 
 In-browser terminal (xterm.js over WebSocket) scoped to a workspace. `terminal-session-manager.ts` manages PTY sessions via `node-pty` (`local-pty-backend.ts`). `run-record-store.ts` persists run records that the agent can read (via practice tools in `agent/practice-tools.ts`), enabling the agent to observe command outputs in the Practice Lab.
 
-`command-resolver.ts` maps file extensions to default shell run commands for the Practice Lab: `.py` → `python`, `.js/.mjs/.cjs` → `node`, `.ts/.tsx` → `npx tsx`, `.sh/.bash/.zsh` → `bash`. Handles path quoting for shell safety.
+`apps/inno-agent/web/src/utils/run-command.ts` maps file extensions to default shell run commands for the Practice Lab Run button: `.py` → `python`, `.js/.mjs/.cjs` → `node`, `.ts/.tsx` → `npx tsx`, `.sh/.bash/.zsh` → `bash`, `.c` → `gcc -std=c17`, `.cpp/.cc/.cxx` → `g++ -std=c++20`. Handles path quoting for shell safety. Tests: `web/src/utils/run-command.test.ts`.
 
 ### Workspace management (`src/workspace/`)
 
