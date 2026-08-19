@@ -433,6 +433,8 @@ export function ChatCenter() {
 
 	// Simple Mode surfaces preset workspaces for one-click start.
 	const simpleMode = useStoreSnapshot(settingsStore, () => settingsStore.settings?.simpleMode?.enabled === true);
+	// Diákok elől a módváltót is rejtjük (a Simple Mode rögzített számukra).
+	const isStudent = useStoreSnapshot(settingsStore, () => settingsStore.settings?.userRole === "student");
 	// Whether the currently selected model accepts image input. Drives the
 	// paste/upload gate so users on text-only custom providers don't get
 	// silently-dropped images. Unknown/missing model → keep allowed (legacy).
@@ -451,11 +453,11 @@ export function ChatCenter() {
 	// Toggle between Simple and Normal mode from the welcome screen. The IA icon
 	// plays a flip animation keyed on the resulting mode.
 	const toggleMode = useCallback(() => {
-		if (togglingMode) return;
+		if (togglingMode || isStudent) return; // diák nem válthat módot
 		const next = !(settingsStore.settings?.simpleMode?.enabled === true);
 		setTogglingMode(true);
 		void settingsStore.saveSimpleMode(next).finally(() => setTogglingMode(false));
-	}, [togglingMode]);
+	}, [togglingMode, isStudent]);
 
 	const chat = useStoreSnapshot(chatStore, () => ({
 		messages: chatStore.messages,
@@ -955,14 +957,15 @@ export function ChatCenter() {
 				<div className="inno-chat-grid flex flex-1 min-h-0 justify-center overflow-y-auto px-4">
 					<div className="w-full max-w-2xl pt-[18vh] pb-12">
 						<div className="mb-6 flex flex-col items-center text-center">
-							<button
-								type="button"
-								onClick={toggleMode}
-								disabled={togglingMode}
-								title={simpleMode ? t("mode.currentSimpleClickNormal") : t("mode.currentNormalClickSimple")}
-								aria-label={simpleMode ? t("mode.switchToNormal") : t("mode.switchToSimple")}
-								className="flip-card-scene mb-3 rounded-xl outline-none focus-visible:shadow-[var(--inno-ring)] disabled:cursor-wait"
-							>
+							{!isStudent && (
+								<button
+									type="button"
+									onClick={toggleMode}
+									disabled={togglingMode}
+									title={simpleMode ? t("mode.currentSimpleClickNormal") : t("mode.currentNormalClickSimple")}
+									aria-label={simpleMode ? t("mode.switchToNormal") : t("mode.switchToSimple")}
+									className="flip-card-scene mb-3 rounded-xl outline-none focus-visible:shadow-[var(--inno-ring)] disabled:cursor-wait"
+								>
 								<motion.div
 									animate={{ rotateY: simpleMode ? 180 : 0 }}
 									transition={{ type: "spring", stiffness: 320, damping: 22 }}
@@ -982,19 +985,22 @@ export function ChatCenter() {
 									</span>
 								</motion.div>
 							</button>
+							)}
 							<h2 className="text-lg font-medium text-[var(--inno-text)]">Inno Agent</h2>
 							{/* Explicit, labeled mode switch (P4): the flip logo above is a nice
 							    secondary affordance, but a worded pill makes the toggle
 							    discoverable instead of hidden behind an icon click. */}
-							<button
-								type="button"
-								onClick={toggleMode}
-								disabled={togglingMode}
-								className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--inno-border)] bg-[var(--inno-surface)] px-2.5 py-1 text-[11px] text-[var(--inno-text-muted)] transition-colors hover:border-[var(--inno-accent)] hover:text-[var(--inno-accent)] disabled:cursor-wait disabled:opacity-60"
-							>
-								<span className={`h-1.5 w-1.5 rounded-full ${simpleMode ? "bg-[var(--inno-accent)]" : "bg-[var(--inno-border-strong)]"}`} />
-								{simpleMode ? t("mode.simpleShort") : t("mode.normalShort")}
-							</button>
+							{!isStudent && (
+								<button
+									type="button"
+									onClick={toggleMode}
+									disabled={togglingMode}
+									className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-[var(--inno-border)] bg-[var(--inno-surface)] px-2.5 py-1 text-[11px] text-[var(--inno-text-muted)] transition-colors hover:border-[var(--inno-accent)] hover:text-[var(--inno-accent)] disabled:cursor-wait disabled:opacity-60"
+								>
+									<span className={`h-1.5 w-1.5 rounded-full ${simpleMode ? "bg-[var(--inno-accent)]" : "bg-[var(--inno-border-strong)]"}`} />
+									{simpleMode ? t("mode.simpleShort") : t("mode.normalShort")}
+								</button>
+							)}
 						</div>
 
 						{renderUploadChips()}

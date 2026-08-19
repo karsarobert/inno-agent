@@ -942,14 +942,15 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 			<div className="border-b border-[var(--inno-border)] px-3 py-2.5">
 				<div className="flex items-center justify-between gap-2">
 					<div className="flex items-center gap-2 min-w-0">
-						<button
-							type="button"
-							onClick={toggleMode}
-							disabled={togglingMode}
-							title={simpleMode ? t("mode.currentSimpleClickNormal") : t("mode.currentNormalClickSimple")}
-							aria-label={simpleMode ? t("mode.switchToNormal") : t("mode.switchToSimple")}
-							className="flip-card-scene shrink-0 rounded-lg outline-none focus-visible:shadow-[var(--inno-ring)] disabled:cursor-wait"
-						>
+						{!isStudent && (
+							<button
+								type="button"
+								onClick={toggleMode}
+								disabled={togglingMode}
+								title={simpleMode ? t("mode.currentSimpleClickNormal") : t("mode.currentNormalClickSimple")}
+								aria-label={simpleMode ? t("mode.switchToNormal") : t("mode.switchToSimple")}
+								className="flip-card-scene shrink-0 rounded-lg outline-none focus-visible:shadow-[var(--inno-ring)] disabled:cursor-wait"
+							>
 							<motion.div
 								animate={{ rotateY: simpleMode ? 180 : 0 }}
 								transition={{ type: "spring", stiffness: 320, damping: 22 }}
@@ -967,6 +968,7 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 								</span>
 							</motion.div>
 						</button>
+						)}
 						<div className="min-w-0">
 							<h1 className="inno-sidebar-title font-semibold tracking-tight text-[var(--inno-text)]">
 								Inno Agent{simpleMode ? <span className="font-normal text-[var(--inno-accent)]">{t("mode.simpleTag")}</span> : null}
