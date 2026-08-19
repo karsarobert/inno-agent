@@ -127,7 +127,7 @@ async function generateNarrative(
 /**
  * (Re)generate the overview page. Returns its wiki-relative path, or null when
  * the knowledge base is empty or generation fails. Rebuilds `wiki/index.md` so
- * the overview is listed under 分析.
+ * the overview is listed under Elemzés.
  */
 export async function regenerateOverview(
 	l2DataDir: string,

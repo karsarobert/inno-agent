@@ -37,7 +37,7 @@ function convertContent(content: string, sourceType: RawSourceType): string {
 		case "pdf":
 		case "word":
 		case "image":
-			// 文本已由 LiteParse 在上游提取，此处直接透传
+			// the text was already extracted upstream by LiteParse; pass it through
 			return content;
 	}
 }

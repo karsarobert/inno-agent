@@ -57,7 +57,7 @@ interface SqliteDatabase {
 /**
  * Segment text for FTS indexing/search.
  *
- * CJK runs are split into overlapping **bigrams** (e.g. 学习计划 → 学习 习计
+ * CJK runs are split into overlapping **bigrams** (e.g. 学习计划 (tanulási terv) → 学习 习计
  * 计划); ASCII/Latin/digit runs are kept whole and lowercased. Bigrams are far
  * more discriminative than single CJK characters — unigram tokens like 的/我/学
  * occur in nearly every chunk and make coverage scoring match everything —

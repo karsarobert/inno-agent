@@ -43,7 +43,9 @@ function eventText(event: LearningEvent): string {
 }
 
 function hasArchiveIntent(text: string): boolean {
-	return /不学|不学习|不再学习|放弃|停止学习|取消.*目标|归档|archive|archived|stop learning|quit/i.test(text);
+	// Recognizes Hungarian and English "stop learning / give up / archive"
+	// intent phrases; English legacy patterns kept for robustness.
+	return /nem tanul|nem tanulom|nem tanulok|nem tanulom tovább|abbahagy|felad|leállít|lemond|archivál|archive|archived|stop learning|quit/i.test(text);
 }
 
 function targetMatchesGoal(goal: LearningGoal, targetText: string, targetGoalId?: string): boolean {
@@ -120,7 +122,7 @@ function mapPreference(raw: string): Partial<LearnerPreferences> {
 	if (!text) return {};
 
 	if (text.includes("Kerülendő") || lowered.startsWith("avoid")) {
-		return { avoid: [text.replace(/^避免[:：]?\s*/, "")] };
+		return { avoid: [text.replace(/^Kerülendő[:：]?\s*/, "")] };
 	}
 	if (lowered.includes("code") || text.includes("Kód")) {
 		return { explanation_style: ["code_first"] };

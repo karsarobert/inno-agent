@@ -875,7 +875,7 @@ function parseSkillFrontmatter(content: string): Record<string, string | boolean
 		const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
 		if (!kv) continue;
 		const raw = kv[2].trim();
-		if (kv[1] in fm) continue; // 保留第一个值（标准YAML行为）
+		if (kv[1] in fm) continue; // keep the first value (standard YAML behavior)
 		fm[kv[1]] = raw === "true" ? true : raw === "false" ? false : raw.replace(/^["']|["']$/g, "");
 	}
 	return fm;
@@ -1961,7 +1961,7 @@ function parseSessionFile(filePath: string): { summary: SessionSummary; messages
 			// We intentionally do NOT substring-match the raw line for natural-language
 			// keywords like "Feishu" / "scheduled" — those appear in ordinary user/assistant
 			// text and would falsely tag a web session as a feishu/scheduler session.
-			// Verified on unmodified code: a learner asking "飞书的英文名?" (user text)
+			// Verified on unmodified code: a learner asking "Mi a Feishu angol neve?" (user text)
 			// or a reply that merely mentions "Feishu" (assistant text) both got mislabeled
 			// as channel=feishu even though origin stayed web. The authoritative channel
 			// record lives in channels.json (via recordCurrentSessionChannel); this
@@ -2171,7 +2171,7 @@ function withRecordedTopic(summary: SessionSummary, metadata: SessionTopicMetada
 /**
  * CLI-origin sessions are created by the terminal agent, which never touches
  * the workspace registry, so they stay unbound and fall back to tmp. Lazily
- * bind them to the dedicated CLI workspace so they group under "CLI 区".
+ * bind them to the dedicated CLI workspace so they group under "CLI-terület".
  */
 function bindCliSessionWorkspace(summary: SessionSummary): SessionSummary {
 	if (summary.origin !== "cli") return summary;
@@ -2189,7 +2189,7 @@ function bindCliSessionWorkspace(summary: SessionSummary): SessionSummary {
 function cleanGeneratedTopic(raw: string): string {
 	return raw
 		.replace(/^["'`“”‘’]+|["'`“”‘’]+$/g, "")
-		.replace(/^标题[:：]\s*/i, "")
+		.replace(/^Cím[:：]?\s*/i, "")
 		.replace(/\s+/g, " ")
 		.trim()
 		.slice(0, 32);

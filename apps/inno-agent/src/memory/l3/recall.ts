@@ -3,7 +3,7 @@
  *
  * High-level cross-conversation retrieval on top of the L3 store. Applies a
  * relevance threshold so the agent only ever sees genuinely related history
- * (per the design goal: "带阈值，不要什么都检索"), excludes the active
+ * (per the design goal: "küszöbértékkel, ne mindent keress vissza"), excludes the active
  * session, dedups, and renders an injectable prompt section.
  *
  * Lexical (FTS5/BM25) is the only backend today; the vector cosine path is
@@ -48,7 +48,7 @@ function tokenize(input: string): string[] {
 /**
  * Whether a query is substantial enough to search. Rejects single CJK
  * characters and lone ASCII letters (too noisy after bigram segmentation),
- * while allowing 2-char CJK words like 飞机 and ASCII words like Python.
+ * while allowing 2-char CJK words like 飞机 (repülő) and ASCII words like Python.
  */
 function isQuerySearchable(query: string): boolean {
 	const cjkChars = (query.match(/[\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff]/g) ?? []).length;

@@ -93,7 +93,7 @@ export function createSchedulerTools(jobStore: JobStore, channelRegistry?: Chann
 			}
 
 			const lines = jobs.map((j: ScheduledJob) =>
-				`- [${j.enabled ? "Engedélyezve" : "Letiltva"}] ${j.name} (${j.id})\n  Cron: ${j.cron} | 类型: ${j.taskType}\n  状态: ${j.lastStatus ?? "Nem futott"} | 成功/失败: ${Math.max(0, j.runCount - j.failureCount)}/${j.failureCount}\n  上次执行: ${j.lastRunAt ?? "Soha"}\n  下次执行: ${j.nextRunAt ?? "Nem számított"}`,
+				`- [${j.enabled ? "Engedélyezve" : "Letiltva"}] ${j.name} (${j.id})\n  Cron: ${j.cron} | Típus: ${j.taskType}\n  Állapot: ${j.lastStatus ?? "Nem futott"} | sikeres/sikertelen: ${Math.max(0, j.runCount - j.failureCount)}/${j.failureCount}\n  Legutóbbi futtatás: ${j.lastRunAt ?? "Soha"}\n  Következő futtatás: ${j.nextRunAt ?? "Nem számított"}`,
 			);
 
 			return {

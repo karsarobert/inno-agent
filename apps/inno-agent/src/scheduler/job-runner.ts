@@ -163,8 +163,8 @@ function formatReminderOutput(prompt: string): string {
 	const trimmed = prompt.trim();
 	if (!trimmed) return "Itt az emlékeztető ideje.";
 	return trimmed
-		.replace(/^提醒学习者[：:]\s*/, "")
-		.replace(/^提醒我[：:]\s*/, "")
+		.replace(/^Emlékeztesd a tanulót[:：]?\s*/i, "")
+		.replace(/^Emlékeztess[:：]?\s*/i, "")
 		.trim() || trimmed;
 }
 
