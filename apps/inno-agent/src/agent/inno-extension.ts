@@ -96,7 +96,7 @@ function buildWorkspaceContextSections(workspaceDir: string): string[] {
 		try {
 			const content = readFileSync(agentFile, "utf-8").trim();
 			if (content) {
-				sections.push(`# 工作区上下文 (${WORKSPACE_AGENT_FILE})\n\n${content}`);
+				sections.push(`# Munkaterület-kontextus (${WORKSPACE_AGENT_FILE})\n\n${content}`);
 			}
 		} catch (err) {
 			logger.warn({ err }, "failed to read workspace agent.md");
@@ -111,7 +111,7 @@ function buildWorkspaceContextSections(workspaceDir: string): string[] {
 			if (skills.length > 0) {
 				const block = formatSkillsForPrompt(skills);
 				if (block.trim()) {
-					sections.push(`# 本工作区私有技能\n${block}`);
+					sections.push(`# A munkaterület privát készségei\n${block}`);
 				}
 			}
 		} catch (err) {
@@ -125,10 +125,10 @@ function buildWorkspaceContextSections(workspaceDir: string): string[] {
 
 function formatWorkspaceFileInstructions(workspaceDir: string): string {
 	return [
-		"# 当前会话文件工作区",
-		`文件浏览器只显示此目录中的文件：\`${workspaceDir}\``,
-		"调用 write 或 edit 时必须使用相对于该目录的路径，例如 `notes.md` 或 `src/main.py`。",
-		"不要使用该目录之外的绝对路径，也不要通过 `..` 或符号链接越过该目录；越界修改会被拒绝。",
+		"# Az aktuális munkamenet fájlmunkaterülete",
+		`A fájlböngésző csak ennek a könyvtárnak a fájljait mutatja: \`${workspaceDir}\``,
+		"A write vagy edit hívásakor ehhez a könyvtárhoz viszonyított elérési utat használj, például `notes.md` vagy `src/main.py`.",
+		"Ne használj a könyvtáron kívüli abszolút elérési utat, és ne lépj ki belőle `..`-val vagy szimbolikus hivatkozással; a kívülre irányuló módosítás elutasításra kerül.",
 	].join("\n");
 }
 
@@ -289,7 +289,7 @@ export function createInnoExtension(
 			const requestedPath = event.input.path;
 			const workspaceDir = resolveActiveWorkspaceDir(paths, deps);
 			if (typeof requestedPath !== "string") {
-				return { block: true, reason: "文件路径无效，请使用当前工作区内的相对路径。" };
+				return { block: true, reason: "Érvénytelen fájl elérési út; használj az aktuális munkaterületen belüli relatív elérési utat." };
 			}
 
 			const check = checkWorkspaceMutationPath(workspaceDir, requestedPath);
@@ -307,7 +307,7 @@ export function createInnoExtension(
 			);
 			return {
 				block: true,
-				reason: `文件路径不在当前工作区内。当前工作区是 ${workspaceDir}，请改用相对路径后重试。`,
+				reason: `A fájl elérési útja nincs az aktuális munkaterületen belül. Az aktuális munkaterület: ${workspaceDir}; használj relatív elérési utat, és próbáld újra.`,
 			};
 		});
 
@@ -321,7 +321,7 @@ export function createInnoExtension(
 			logger.warn({ command }, "blocked open/xdg-open command in bash tool");
 			return {
 				block: true,
-				reason: "不要使用 open/xdg-open 命令打开文件。文件生成后用户会在浏览器右侧的文件预览面板自动看到结果；如需引导用户查看，在回复里说明文件路径即可。",
+				reason: "Ne használd az open/xdg-open parancsokat fájl megnyitásához. A fájl létrehozása után a felhasználó automatikusan látja az eredményt a böngésző jobb oldali fájl-előnézeti paneljén; ha szeretnéd vezetni a felhasználót, a válaszban írd le a fájl elérési útját.",
 			};
 		});
 
@@ -400,16 +400,16 @@ export function createInnoExtension(
 							const tail = deps.runRecordStore.getOutputTail(last, 80);
 							sections.push(
 								[
-									"[最近一次代码运行]",
-									`命令: ${last.command}`,
-									`目录: ${last.cwd}`,
-									`开始: ${last.startedAt}`,
-									last.endedAt ? `结束: ${last.endedAt}` : "结束: (运行中或异常退出)",
+									"[A legutóbbi kódfuttatás]",
+									`Parancs: ${last.command}`,
+									`Könyvtár: ${last.cwd}`,
+									`Kezdés: ${last.startedAt}`,
+									last.endedAt ? `Vége: ${last.endedAt}` : "Vége: (fut vagy rendellenesen kilépett)",
 									last.exitCode !== undefined ? `exit: ${last.exitCode}` : "exit: ?",
-									last.sourceFile ? `源文件: ${last.sourceFile}` : "",
-									"输出 (tail 80 行):",
+									last.sourceFile ? `Forrásfájl: ${last.sourceFile}` : "",
+									"Kimenet (utolsó 80 sor):",
 									"```",
-									tail || "(空)",
+									tail || "(üres)",
 									"```",
 								].filter(Boolean).join("\n"),
 							);

@@ -161,7 +161,7 @@ export async function executeJob(
 
 function formatReminderOutput(prompt: string): string {
 	const trimmed = prompt.trim();
-	if (!trimmed) return "提醒时间到了。";
+	if (!trimmed) return "Itt az emlékeztető ideje.";
 	return trimmed
 		.replace(/^提醒学习者[：:]\s*/, "")
 		.replace(/^提醒我[：:]\s*/, "")

@@ -28,26 +28,26 @@ export interface WikiLinkMaintenanceResult {
 	pages: string[];
 }
 
-const LINK_MAINTAIN_PROMPT = `你是一个学习 Wiki 知识库维护助手。
+const LINK_MAINTAIN_PROMPT = `Te vagy a tanulási Wiki tudásbázis karbantartó asszisztense.
 
-请从下面的资料摘要中抽取值得长期维护的实体和概念，并分类。
+Az alábbi anyagkivonatból emeld ki a hosszú távon karbantartásra érdemes entitásokat és fogalmakat, és osztályozd őket.
 
-分类规则：
-- entity: 人物、组织、公司、项目、产品、论文、标准、框架/库的具体名称。
-- concept: 技术概念、理论、方法、能力、机制、模式、问题类型。
-- 不要抽取过泛的词，例如"方法"、"系统"、"内容"。
-- 优先使用资料中已有的 [[双链]] 条目。
-- 最多返回 20 个条目。
+Osztályozási szabályok:
+- entity: személyek, szervezetek, cégek, projektek, termékek, tanulmányok, szabványok, keretrendszerek/könyvtárak konkrét nevei.
+- concept: technikai fogalmak, elméletek, módszerek, képességek, mechanizmusok, minták, problémattípusok.
+- Ne emelj ki túl általános szavakat, pl. "Módszer", "Rendszer", "Tartalom".
+- Előnyben részesítsd az anyagban már meglévő [[kétirányú hivatkozás]] bejegyzéseket.
+- Legfeljebb 20 bejegyzést adj vissza.
 
-资料标题：{title}
+Anyag címe: {title}
 
-资料摘要：
+Anyagkivonat:
 ---
 {content}
 ---
 
-只返回 JSON，不要代码块：
-{"items":[{"title":"条目名","type":"concept","description":"一句话定义或说明"}]}`;
+Csak JSON-t adj vissza, kódblokk nélkül:
+{"items":[{"title":"Szócikk neve","type":"concept","description":"Egymondatos meghatározás vagy leírás"}]}`;
 
 const MAX_LINK_PROMPT_LENGTH = 30000;
 
@@ -101,7 +101,7 @@ function fallbackItems(content: string): LinkedItem[] {
 	return extractWikiLinks(content).slice(0, 20).map((title) => ({
 		title,
 		type: looksLikeEntity(title) ? "entity" : "concept",
-		description: "由 L2 自动从资料摘要中的双链识别，待进一步完善。",
+		description: "Az L2 automatikusan azonosítja az anyagkivonat kétirányú hivatkozásaiból; további finomításra vár.",
 	}));
 }
 
@@ -128,7 +128,7 @@ function parseLinkedItemsJson(text: string): LinkedItem[] {
 			description:
 				typeof record.description === "string" && record.description.trim()
 					? record.description.trim()
-					: "由 L2 自动识别，待进一步完善。",
+					: "Az L2 automatikusan azonosítja; további finomításra vár.",
 		});
 	}
 	return items;
@@ -145,7 +145,7 @@ async function extractLinkedItems(
 
 	const truncated =
 		content.length > MAX_LINK_PROMPT_LENGTH
-			? content.slice(0, MAX_LINK_PROMPT_LENGTH) + "\n\n...(内容已截断)"
+			? content.slice(0, MAX_LINK_PROMPT_LENGTH) + "\n\n...(a tartalom csonkolva)"
 			: content;
 	const prompt = LINK_MAINTAIN_PROMPT.replace("{title}", title).replace("{content}", truncated);
 
@@ -238,11 +238,11 @@ function buildNewPage(item: LinkedItem, entry: ManifestEntry, sourcePagePath: st
 	return `${frontmatter}
 # ${item.title}
 
-## 定义
+## Meghatározás
 
 ${item.description}
 
-## 相关资料
+## Kapcsolódó anyagok
 
 - [[${entry.title}]] — \`${sourcePagePath}\`
 `;
@@ -292,7 +292,7 @@ function addReferenceIfMissing(content: string, entry: ManifestEntry, sourcePage
 	if (bodyAlreadyReferencesSource) return changed ? content : null;
 
 	const bullet = referenceBullet(entry, sourcePagePath);
-	const sectionHeader = "\n## 相关资料";
+	const sectionHeader = "\n## Kapcsolódó anyagok";
 	const sectionStart = content.indexOf(sectionHeader);
 	if (sectionStart >= 0) {
 		const bodyStart = sectionStart + sectionHeader.length;
@@ -302,7 +302,7 @@ function addReferenceIfMissing(content: string, entry: ManifestEntry, sourcePage
 		const after = content.slice(insertAt);
 		return `${before}\n${bullet}${after}`;
 	}
-	return `${content.trimEnd()}\n\n## 相关资料\n\n${bullet}\n`;
+	return `${content.trimEnd()}\n\n## Kapcsolódó anyagok\n\n${bullet}\n`;
 }
 
 function upsertLinkedPage(
@@ -390,27 +390,27 @@ interface PlanItem {
 	contradiction?: string;
 }
 
-const STAGE1_PLAN_PROMPT = `你是学习 Wiki 知识库的维护规划助手。已知一份新资料的摘要，以及知识库中若干实体/概念页面的现有定义。请为每个条目规划如何维护。
+const STAGE1_PLAN_PROMPT = `Te vagy a tanulási Wiki tudásbázis karbantartás-tervező asszisztense. Ismert egy új anyag kivonata, valamint a tudásbázis egyes entitás-/fogalomoldalainak meglévő definíciói. Tervezd meg, hogyan kell karbantartani az egyes bejegyzéseket.
 
-规则：
-- action=create：知识库尚无此条目（现有定义为空）。definition 写一到三句中文定义。
-- action=update：已有此条目。请把新资料的信息与现有定义**融合**，写出更完整、准确、无重复的 definition（融合后的完整定义，而不是仅追加）。
-- 若新资料与现有定义存在**事实冲突/矛盾**，将 contradiction 设为一句话冲突说明；否则设为 null。
-- definition 聚焦"是什么"，不要写入学习者个人状态、目标或偏好。
-- 最多处理 20 个条目。
+Szabályok:
+- action=create: a tudásbázisban még nincs ilyen bejegyzés (a meglévő definíció üres). A definition-be írj egy-három mondatos magyar definíciót.
+- action=update: már létezik ilyen bejegyzés. **Ötvözd** az új anyag információit a meglévő definícióval, és írj teljesebb, pontosabb, ismétlésmentes definition-t (az egyesített teljes meghatározást, ne csupán hozzáfűzést).
+- Ha az új anyag és a meglévő definíció között **ténybeli ellentmondás/konfliktus** van, a contradiction mezőbe írj egy mondatos ellentmondás-magyarázatot; egyébként null legyen.
+- A definition a „Mi ez” kérdésre fókuszáljon; ne írj bele a tanuló személyes állapotát, céljait vagy preferenciáit.
+- Legfeljebb 20 bejegyzést dolgozz fel.
 
-资料标题：{title}
+Anyag címe: {title}
 
-资料摘要：
+Anyagkivonat:
 ---
 {summary}
 ---
 
-候选条目（existingDefinition 为空表示知识库暂无该条目）：
+Jelölt bejegyzések (üres existingDefinition = a tudásbázisban még nincs ilyen bejegyzés):
 {candidates}
 
-只返回 JSON，不要代码块：
-{"items":[{"title":"条目名","type":"concept","action":"update","definition":"融合后的完整定义","contradiction":null}]}`;
+Csak JSON-t adj vissza, kódblokk nélkül:
+{"items":[{"title":"Szócikk neve","type":"concept","action":"update","definition":"Az egyesített teljes meghatározás","contradiction":null}]}`;
 
 function parsePlanItems(text: string): PlanItem[] {
 	const trimmed = text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "");
@@ -452,9 +452,9 @@ function readExistingDefinition(l2DataDir: string, item: LinkedItem): string | u
 	const abs = join(l2DataDir, rel);
 	if (!existsSync(abs)) return undefined;
 	const { body } = parseFrontmatter(readText(abs));
-	const idx = body.indexOf("## 定义");
+	const idx = body.indexOf("## Meghatározás");
 	if (idx < 0) return undefined;
-	const rest = body.slice(idx + "## 定义".length);
+	const rest = body.slice(idx + "## Meghatározás".length);
 	const nextSec = rest.search(/\n## /);
 	const def = (nextSec >= 0 ? rest.slice(0, nextSec) : rest).trim();
 	return def || undefined;
@@ -476,7 +476,7 @@ async function planLinkedItems(
 		})),
 	);
 	const truncatedSummary =
-		summary.length > MAX_LINK_PROMPT_LENGTH ? summary.slice(0, MAX_LINK_PROMPT_LENGTH) + "\n\n...(内容已截断)" : summary;
+		summary.length > MAX_LINK_PROMPT_LENGTH ? summary.slice(0, MAX_LINK_PROMPT_LENGTH) + "\n\n...(a tartalom csonkolva)" : summary;
 	const prompt = STAGE1_PLAN_PROMPT
 		.replace("{title}", title)
 		.replace("{summary}", truncatedSummary)
@@ -503,11 +503,11 @@ async function planLinkedItems(
 }
 
 function replaceDefinitionSection(content: string, newDef: string): string {
-	const header = "## 定义";
+	const header = "## Meghatározás";
 	const idx = content.indexOf(header);
 	if (idx < 0) {
-		const relIdx = content.indexOf("\n## 相关资料");
-		const section = `## 定义\n\n${newDef}\n\n`;
+		const relIdx = content.indexOf("\n## Kapcsolódó anyagok");
+		const section = `## Meghatározás\n\n${newDef}\n\n`;
 		if (relIdx >= 0) return `${content.slice(0, relIdx + 1)}${section}${content.slice(relIdx + 1)}`;
 		return `${content.trimEnd()}\n\n${section}`;
 	}
@@ -527,8 +527,8 @@ function applyContradiction(content: string, entry: ManifestEntry, note: string)
 	let next = fmResult.content;
 	let changed = fmResult.changed;
 	if (!next.includes(note)) {
-		const bullet = `- ${note}（来源 [[${entry.title}]] \`${entry.id}\`）`;
-		const header = "\n## 争议";
+		const bullet = `- ${note} (forrás [[${entry.title}]] \`${entry.id}\`)`;
+		const header = "\n## Vita";
 		const idx = next.indexOf(header);
 		if (idx >= 0) {
 			const bodyStart = idx + header.length;
@@ -537,7 +537,7 @@ function applyContradiction(content: string, entry: ManifestEntry, note: string)
 			const insertAt = nextSec >= 0 ? bodyStart + nextSec : next.length;
 			next = `${next.slice(0, insertAt).trimEnd()}\n${bullet}${next.slice(insertAt)}`;
 		} else {
-			next = `${next.trimEnd()}\n\n## 争议\n\n${bullet}\n`;
+			next = `${next.trimEnd()}\n\n## Vita\n\n${bullet}\n`;
 		}
 		changed = true;
 	}

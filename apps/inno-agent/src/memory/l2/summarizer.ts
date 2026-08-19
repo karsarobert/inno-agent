@@ -8,29 +8,29 @@ import { complete } from "@earendil-works/pi-ai";
 import type { Model } from "@earendil-works/pi-ai";
 import type { ModelRegistry } from "@earendil-works/pi-coding-agent";
 
-const SUMMARIZE_PROMPT = `你是一个知识库管理助手。请为以下资料生成结构化的 Wiki 摘要页。
+const SUMMARIZE_PROMPT = `Te vagy a tudásbázis-kezelő asszisztens. Készíts strukturált Wiki-kivonatoldalt az alábbi anyaghoz.
 
-资料标题：{title}
+Anyag címe: {title}
 
-资料内容：
+Anyag tartalma:
 ---
 {content}
 ---
 
-请严格按以下格式输出纯 Markdown（不要加代码块标记）：
+Szigorúan az alábbi formátumban adj ki tiszta Markdown-t (ne használj kódblokk-jelölőt):
 
-## 摘要
+## Összegzés
 
-用 1-3 段简洁的文字总结这份资料的核心内容。
+Foglald össze az anyag lényegét 1-3 tömör bekezdésben.
 
-## 关键概念
+## Kulcsfogalmak
 
-列出资料中的关键概念、技术、人物或项目，每个用 [[双链]] 格式标注：
-- [[概念名]]: 一句话说明
+Sorold fel az anyag kulcsfogalmait, technológiáit, személyeit vagy projektjeit; mindegyiket [[kétirányú hivatkozás]] formátumban jelöld:
+- [[fogalomnév]]: egymondatos magyarázat
 
-## 要点
+## Fontos tudáspontok
 
-用要点列表列出 3-8 个最重要的知识点或结论。`;
+Felsorolásos listában adj meg 3-8 legfontosabb tudáspontot vagy következtetést.`;
 
 const MAX_CONTENT_LENGTH = 50000;
 
@@ -46,7 +46,7 @@ export async function summarizeContent(
 ): Promise<string | null> {
 	const truncated =
 		content.length > MAX_CONTENT_LENGTH
-			? content.slice(0, MAX_CONTENT_LENGTH) + "\n\n...(内容已截断)"
+			? content.slice(0, MAX_CONTENT_LENGTH) + "\n\n...(a tartalom csonkolva)"
 			: content;
 
 	const prompt = SUMMARIZE_PROMPT.replace("{title}", title).replace("{content}", truncated);

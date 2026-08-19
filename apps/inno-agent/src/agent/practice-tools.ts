@@ -30,7 +30,7 @@ export function createPracticeTools(deps: PracticeToolDeps): ToolDefinition[] {
 		name: "create_practice_lab",
 		label: "Create Practice Lab",
 		description:
-			"在当前会话绑定的工作区里创建一组学习实践文件(代码、数据、说明)。返回的结构化结果包含 mainFile 与 suggestedCommand,前端会自动打开 mainFile 并显示 Run 按钮。用户点 Run 才会真正运行,不要自己跑 bash。",
+			"Hozz létre egy gyakorlófájl-készletet (kód, adat, leírás) az aktuális munkamenethez kötött munkaterületen. A visszaadott strukturált eredmény tartalmazza a mainFile-t és a suggestedCommand-ot; az előtér automatikusan megnyitja a mainFile-t, és megjeleníti a Run gombot. A kód csak akkor fut, ha a felhasználó a Run gombra kattint; ne futtass bash-t magad.",
 		parameters: CreatePracticeLabSchema,
 		async execute(_toolCallId, params) {
 			const typed = params as {

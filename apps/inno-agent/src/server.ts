@@ -535,8 +535,8 @@ function prependImagePathsHint(prompt: string, imagePaths: string[]): string {
 	if (imagePaths.length === 0) return prompt;
 	const list = imagePaths.map((p) => `- ${p}`).join("\n");
 	return (
-		`[用户本轮上传了 ${imagePaths.length} 张图片，已保存到工作区：\n${list}\n` +
-		`如果需要识别图片中的文字（当前模型可能不支持图片识别），请调用 ocr_image 工具并传入上述路径。]\n\n${prompt}`
+		`[A felhasználó ebben a körben ${imagePaths.length} képet töltött fel; ezek a munkaterületre mentve: \n${list}\n` +
+		`Ha fel kell ismerni a képek szövegét (az aktuális modell esetleg nem támogatja a képfelismerést), hívd az ocr_image eszközt a fenti elérési utak átadásával.]\n\n${prompt}`
 	);
 }
 
@@ -1820,8 +1820,8 @@ type SessionTopicMetadata = Record<string, { topic: string; updatedAt: string; g
 
 /**
  * Serialize a parsed session (summary + merged messages) into a review-friendly
- * Markdown document. User turns become `## 🧑 用户`, assistant turns become
- * `## 🤖 助手`; thinking traces and tool calls are folded into `<details>` so
+ * Markdown document. User turns become `## 🧑 Felhasználó`, assistant turns become
+ * `## 🤖 Asszisztens`; thinking traces and tool calls are folded into `<details>` so
  * the linear reading flow stays clean while the full trace remains available.
  *
  * Images are inlined as data URLs so the exported file is self-contained.
@@ -1831,15 +1831,15 @@ function sessionToMarkdown(
 	messages: SessionMessageSummary[],
 ): string {
 	const lines: string[] = [];
-	const title = summary.name?.trim() || "未命名对话";
+	const title = summary.name?.trim() || "Névtelen beszélgetés";
 	lines.push(`# ${title}`, "");
 	const createdAt = safeFormatDate(summary.createdAt);
 	const updatedAt = safeFormatDate(summary.updatedAt);
 	const channels = summary.channels.length > 0 ? summary.channels.join("、") : "—";
 	lines.push(
-		`> 共 ${messages.length} 条消息 · 渠道：${channels}`,
-		`> 创建：${createdAt} · 更新：${updatedAt}`,
-		`> 导出：${new Date().toISOString()}`,
+		`> Összesen ${messages.length} üzenet · csatorna: ${channels}`,
+		`> Létrehozva: ${createdAt} · Frissítve: ${updatedAt}`,
+		`> Exportálva: ${new Date().toISOString()}`,
 		"",
 		"---",
 		"",
@@ -1847,10 +1847,10 @@ function sessionToMarkdown(
 	for (const msg of messages) {
 		const time = safeFormatDate(new Date(msg.timestamp).toISOString());
 		if (msg.role === "user") {
-			lines.push(`## 🧑 用户`, "");
+			lines.push(`## 🧑 Felhasználó`, "");
 			lines.push(`*${time}*`, "");
 		} else {
-			lines.push(`## 🤖 助手`, "");
+			lines.push(`## 🤖 Asszisztens`, "");
 			lines.push(`*${time}*`, "");
 		}
 		if (msg.content.trim()) {
@@ -1865,7 +1865,7 @@ function sessionToMarkdown(
 		}
 		if (msg.thinking && msg.thinking.trim()) {
 			lines.push(
-				"<details><summary>💭 思考过程</summary>",
+				"<details><summary>💭 Gondolkodási folyamat</summary>",
 				"",
 				msg.thinking.trim(),
 				"",
@@ -1877,9 +1877,9 @@ function sessionToMarkdown(
 			for (const tool of msg.tools) {
 				const tag = tool.isError ? "❌" : "🔧";
 				lines.push(
-					`<details><summary>${tag} 工具调用：${tool.toolName}</summary>`,
+					`<details><summary>${tag} eszközhívás: ${tool.toolName}</summary>`,
 					"",
-					"**参数：**",
+					"**Paraméterek:**",
 					"",
 					"```json",
 					safeStringify(tool.args),
@@ -1887,7 +1887,7 @@ function sessionToMarkdown(
 					"",
 				);
 				if (tool.result !== undefined) {
-					lines.push("**结果：**", "", "```json", safeStringify(tool.result), "```", "");
+					lines.push("**Eredmény:**", "", "```json", safeStringify(tool.result), "```", "");
 				}
 				lines.push("</details>", "");
 			}
@@ -1959,10 +1959,10 @@ function parseSessionFile(filePath: string): { summary: SessionSummary; messages
 			// Detect channel ONLY from structured JSON fields written by the system
 			// (message.channel / message.source / message.api / message.model).
 			// We intentionally do NOT substring-match the raw line for natural-language
-			// keywords like "飞书" / "scheduled" — those appear in ordinary user/assistant
+			// keywords like "Feishu" / "scheduled" — those appear in ordinary user/assistant
 			// text and would falsely tag a web session as a feishu/scheduler session.
 			// Verified on unmodified code: a learner asking "飞书的英文名?" (user text)
-			// or a reply that merely mentions "飞书" (assistant text) both got mislabeled
+			// or a reply that merely mentions "Feishu" (assistant text) both got mislabeled
 			// as channel=feishu even though origin stayed web. The authoritative channel
 			// record lives in channels.json (via recordCurrentSessionChannel); this
 			// detection is only a best-effort hint for legacy sessions that predate it.
@@ -2323,7 +2323,7 @@ const server = createServer(async (req, res) => {
 			const target = channelRegistry.getDefaultTarget(channelTestMatch.name);
 			const text = typeof body.text === "string" && body.text.trim()
 				? body.text.trim()
-				: "Inno Agent 飞书主动推送测试。";
+				: "Inno Agent Feishu-aktívküldés-teszt.";
 			if (!channel) {
 				json(res, 404, { error: "Channel not found" });
 				return;
@@ -3252,7 +3252,7 @@ const server = createServer(async (req, res) => {
 			const profile = loadProfile(paths.learnerDataDir);
 			const goal: LearningGoal = {
 				goal_id: `goal_${randomUUID().slice(0, 8)}`,
-				title: typeof body.title === "string" ? body.title : "新目标",
+				title: typeof body.title === "string" ? body.title : "Új cél",
 				type: (body.type as LearningGoal["type"]) || "skill",
 				priority: typeof body.priority === "number" ? body.priority : 0.5,
 				status: (body.status as LearningGoal["status"]) || "active",
@@ -3945,7 +3945,7 @@ const server = createServer(async (req, res) => {
 			const exitCodeText = record.exitCode === null || record.exitCode === undefined
 				? "(unknown)"
 				: String(record.exitCode);
-			const exitStatus = record.exitCode === 0 ? "成功" : record.exitCode !== null && record.exitCode !== undefined ? "失败" : "未完成";
+			const exitStatus = record.exitCode === 0 ? "Sikeres" : record.exitCode !== null && record.exitCode !== undefined ? "Sikertelen" : "Befejezetlen";
 
 			const frontmatter = serializeFrontmatter({
 				title,
@@ -3962,23 +3962,23 @@ const server = createServer(async (req, res) => {
 			const bodyLines = [
 				`# ${title}`,
 				"",
-				"## 元信息",
-				`- 命令: \`${record.command}\``,
-				`- 工作区: ${ws?.name ?? record.workspaceId} (\`${record.cwd}\`)`,
-				record.sourceFile ? `- 源文件: \`${record.sourceFile}\`` : "",
-				`- 开始: ${record.startedAt}`,
-				record.endedAt ? `- 结束: ${record.endedAt}` : "",
-				`- 退出码: ${exitCodeText} (${exitStatus})`,
-				record.signal ? `- 信号: ${record.signal}` : "",
+				"## Metaadatok",
+				`- Parancs: \`${record.command}\``,
+				`- Munkaterület: ${ws?.name ?? record.workspaceId} (\`${record.cwd}\`)`,
+				record.sourceFile ? `- Forrásfájl: \`${record.sourceFile}\`` : "",
+				`- Kezdés: ${record.startedAt}`,
+				record.endedAt ? `- Vége: ${record.endedAt}` : "",
+				`- Kilépési kód: ${exitCodeText} (${exitStatus})`,
+				record.signal ? `- Jel: ${record.signal}` : "",
 				`- run id: ${record.id}`,
 				"",
-				"## 输出",
+				"## Kimenet",
 				"```",
-				outputTail || "(无输出)",
+				outputTail || "(nincs kimenet)",
 				"```",
 			].filter(Boolean);
 			if (note) {
-				bodyLines.push("", "## 备注", note);
+				bodyLines.push("", "## Megjegyzések", note);
 			}
 
 			const content = `${frontmatter}\n\n${bodyLines.join("\n")}\n`;

@@ -398,12 +398,12 @@ export function getCurrentSessionChannelHint(): RuntimeChannelHint {
 		if (message.role !== "user") continue;
 		const asText = JSON.stringify(message).toLowerCase();
 		// Check dispatcher channel tag first (most reliable)
-		if (asText.includes("[消息来源渠道: feishu]")) return "feishu";
-		if (asText.includes("[消息来源渠道: wechat]")) return "wechat";
-		if (asText.includes("[消息来源渠道: qq]")) return "qq";
-		if (asText.includes("[消息来源渠道: web]")) return "web";
+		if (asText.includes("[Üzenet forráscsatornája: feishu]")) return "feishu";
+		if (asText.includes("[Üzenet forráscsatornája: wechat]")) return "wechat";
+		if (asText.includes("[Üzenet forráscsatornája: qq]")) return "qq";
+		if (asText.includes("[Üzenet forráscsatornája: web]")) return "web";
 		// Legacy heuristics
-		if (asText.includes("附件已下载到")) return "feishu";
+		if (asText.includes("A melléklet letöltve ide:")) return "feishu";
 		if (asText.includes("\"source\":\"web\"") || asText.includes("\"channel\":\"web\"")) return "web";
 	}
 	return "unknown";
@@ -485,7 +485,7 @@ export function persistPendingUserTurn(expectedSessionId?: string): boolean {
 
 		const placeholder: AssistantMessage = {
 			role: "assistant",
-			content: [{ type: "text", text: "[已中断,未完成回复]" }],
+			content: [{ type: "text", text: "[Megszakítva, befejezetlen válasz]" }],
 			api: "inno-background",
 			provider: "inno",
 			model: "interrupted",

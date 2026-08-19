@@ -72,7 +72,7 @@ export function createLearnerTools(
 	learnerId: string,
 	isEnabled?: () => boolean,
 ): ToolDefinition[] {
-	const L1_DISABLED_TEXT = "L1 学习者画像已在设置中关闭，当前不读取也不更新学习者画像。";
+	const L1_DISABLED_TEXT = "Az L1 tanulói profil ki van kapcsolva a beállításokban; jelenleg sem olvasás, sem frissítés nem történik.";
 	const disabledResult = () => ({
 		content: [{ type: "text" as const, text: L1_DISABLED_TEXT }],
 		details: { disabled: true } as Record<string, unknown>,
@@ -82,7 +82,7 @@ export function createLearnerTools(
 		name: "get_learner_context",
 		label: "Get Learner Context",
 		description:
-			"读取当前学习者上下文包，包含活跃目标、相关概念掌握度、活跃误区和教学提示。在开始新对话或需要了解学习者状态时调用。",
+			"Az aktuális tanulói kontextuscsomag beolvasása: aktív célok, kapcsolódó fogalmak elsajátítottsága, aktív tévhitek és tanítási tippek. Akkor hívd, ha új beszélgetés kezdődik, vagy ha ismerni kell a tanuló állapotát.",
 		parameters: Type.Object({}),
 		async execute() {
 			if (isEnabled && !isEnabled()) return disabledResult();
@@ -99,7 +99,7 @@ export function createLearnerTools(
 		name: "record_learning_event",
 		label: "Record Learning Event",
 		description:
-			"记录一个结构化的学习事件，并自动把确定性信号合入 L1 学习者画像。当观察到学习者声明/停止/切换目标、完成练习、接受讲解、自我评估、表达偏好、接收反馈或达到里程碑时调用。",
+			"Strukturált tanulási esemény naplózása, és a határozott jelek automatikus beépítése az L1 tanulói profilba. Akkor hívd, ha a tanuló célt tűz ki/állít le/vált, gyakorlatot végez, magyarázatot fogad el, önértékelést ad, preferenciát fejez ki, visszajelzést kap, vagy mérföldkőhöz ér.",
 		parameters: Type.Object({
 			event_type: StringEnum([
 				"goal_declared",
@@ -117,14 +117,14 @@ export function createLearnerTools(
 			}),
 				payload: Type.Record(Type.String(), Type.Unknown(), {
 					description:
-						"Event-specific data. For stopping a goal, include goal_description/action/reason such as { goal_description: '不再学习 Rust', action: 'archived' }. For switching goals, include previous_goal and goal.",
+						"Eseményspecifikus adatok. Cél leállításához add meg a goal_description/action/reason értékeket, pl. { goal_description: 'nem tanulok többé Rustot', action: 'archived' }. Célváltáshoz add meg a previous_goal és a goal értékeket.",
 				}),
 			derived_signals: Type.Optional(
 				Type.Object({
 					mastery_delta: Type.Optional(Type.Number({ description: "Change in mastery estimate" })),
 					misconception_candidates: Type.Optional(Type.Array(Type.String(), { description: "Observed learner misconceptions or error patterns, e.g. ['thinks Rust ownership means the variable is destroyed after borrow']" })),
 					affect: Type.Optional(Type.String({ description: "Detected affect, e.g. frustrated, confident" })),
-					preference_candidates: Type.Optional(Type.Array(Type.String(), { description: "Observed learner preferences, e.g. ['prefers code-first explanations', '避免长篇理论']" })),
+					preference_candidates: Type.Optional(Type.Array(Type.String(), { description: "Megfigyelt tanulói preferenciák, pl. ['prefers code-first explanations', 'elkerüli a hosszú elméleti magyarázatokat']" })),
 				}),
 			),
 		}),
@@ -143,7 +143,7 @@ export function createLearnerTools(
 					content: [
 						{
 							type: "text" as const,
-							text: `学习事件已记录并同步画像: ${event.event_id} (${event.event_type})，当前画像版本 ${profile.version}`,
+							text: `A tanulási esemény rögzítve és a profillal szinkronizálva: ${event.event_id} (${event.event_type}); aktuális profilverzió: ${profile.version}`,
 						},
 					],
 					details: { event_id: event.event_id, profile_version: profile.version },
@@ -159,7 +159,7 @@ export function createLearnerTools(
 		name: "patch_learner_profile",
 		label: "Patch Learner Profile",
 		description:
-			"低成本局部更新 L1 学习者画像。用于在一次学习互动后调整某个概念的掌握度/诊断/复习时间，追加偏好或画像摘要；不需要提交完整知识状态对象。",
+			"Költséghatékony, részleges L1 tanulói profil-frissítés. Egy tanulási interakció után egy fogalom elsajátítottságának/diagnózisának/ismétlési idejének módosítására, preferencia vagy profilkivonat hozzáfűzésére szolgál; nem igényel teljes tudásállapot-objektumot.",
 		parameters: Type.Object({
 			concept_id: Type.Optional(Type.String({ description: "Concept ID to create or patch, e.g. rust.ownership" })),
 			concept_name: Type.Optional(Type.String({ description: "Human-readable concept name" })),
@@ -184,7 +184,7 @@ export function createLearnerTools(
 					content: [
 						{
 							type: "text" as const,
-							text: `学习者画像已局部更新至版本 ${updated.version}`,
+							text: `A tanulói profil részlegesen frissítve: ${updated.version} verzió`,
 						},
 					],
 					details: { version: updated.version },
@@ -200,7 +200,7 @@ export function createLearnerTools(
 		name: "update_learner_profile",
 		label: "Update Learner Profile",
 		description:
-			"更新学习者画像的特定字段。可以更新目标、知识状态、误区、偏好和画像摘要。数组字段按 ID 合并（已存在则替换，不存在则新增）。",
+			"A tanulói profil egyes mezőinek frissítése. Frissíthető a cél, a tudásállapot, a tévhitek, a preferenciák és a profilkivonat. A tömbmezők azonosító alapján egyesülnek (a meglévő felülíródik, az új hozzáadódik).",
 		parameters: Type.Object({
 			goals: Type.Optional(Type.Array(LearningGoalSchema)),
 			knowledge_states: Type.Optional(Type.Array(KnowledgeStateSchema)),
@@ -216,7 +216,7 @@ export function createLearnerTools(
 					content: [
 						{
 							type: "text" as const,
-							text: `学习者画像已更新至版本 ${updated.version}`,
+							text: `A tanulói profil frissítve: ${updated.version} verzió`,
 						},
 					],
 					details: { version: updated.version },
@@ -232,40 +232,40 @@ export function createLearnerTools(
 		name: "review_learner_profile",
 		label: "Review Learner Profile",
 		description:
-			"展示完整的学习者画像，供用户查看、修正或删除。当用户请求查看自己的学习状态时调用。",
+			"A teljes tanulói profil megjelenítése megtekintéshez, javításhoz vagy törléshez. Akkor hívd, ha a felhasználó meg szeretné nézni a tanulási állapotát.",
 		parameters: Type.Object({}),
 		async execute() {
 			if (isEnabled && !isEnabled()) return disabledResult();
 			const profile = loadProfile(dataDir);
 			const summary = [
-				`学习者 ID: ${profile.learner_id}`,
-				`版本: ${profile.version}`,
-				`更新时间: ${profile.updated_at}`,
+				`Tanuló azonosító: ${profile.learner_id}`,
+				`Verzió: ${profile.version}`,
+				`Frissítés ideje: ${profile.updated_at}`,
 				``,
-				`## 学习目标 (${profile.goals.length})`,
+				`## Tanulási célok (${profile.goals.length})`,
 				...profile.goals.map(
-					(g) => `- [${g.status}] ${g.title} (优先级: ${g.priority}, 类型: ${g.type})`,
+					(g) => `- [${g.status}] ${g.title} (prioritás: ${g.priority}, típus: ${g.type})`,
 				),
 				``,
-				`## 知识状态 (${profile.knowledge_states.length})`,
+				`## Tudásállapot (${profile.knowledge_states.length})`,
 				...profile.knowledge_states.map(
 					(ks) =>
-						`- ${ks.concept_name} (${ks.concept_id}): 掌握度 ${ks.mastery.toFixed(2)}, 置信度 ${ks.confidence.toFixed(2)}\n  诊断: ${ks.diagnosis}`,
+						`- ${ks.concept_name} (${ks.concept_id}): elsajátítottság ${ks.mastery.toFixed(2)}, megbízhatóság ${ks.confidence.toFixed(2)}\n  Diagnózis: ${ks.diagnosis}`,
 				),
 				``,
-				`## 误区 (${profile.misconceptions.length})`,
+				`## Tévhitek (${profile.misconceptions.length})`,
 				...profile.misconceptions.map(
-					(m) => `- [${m.status}] ${m.description} (严重度: ${m.severity.toFixed(2)})`,
+					(m) => `- [${m.status}] ${m.description} (súlyosság: ${m.severity.toFixed(2)})`,
 				),
 				``,
-				`## 偏好`,
-				`- 讲解风格: ${profile.preferences.explanation_style.join(", ") || "未设定"}`,
-				`- 练习风格: ${profile.preferences.practice_style.join(", ") || "未设定"}`,
-				`- 反馈语气: ${profile.preferences.feedback_tone.join(", ") || "未设定"}`,
-				`- 避免: ${profile.preferences.avoid.join(", ") || "未设定"}`,
+				`## Preferenciák`,
+				`- Magyarázati stílus: ${profile.preferences.explanation_style.join(", ") || "Nincs beállítva"}`,
+				`- Gyakorlási stílus: ${profile.preferences.practice_style.join(", ") || "Nincs beállítva"}`,
+				`- Visszajelzési hangnem: ${profile.preferences.feedback_tone.join(", ") || "Nincs beállítva"}`,
+				`- Kerülendő: ${profile.preferences.avoid.join(", ") || "Nincs beállítva"}`,
 				``,
-				`## 画像摘要`,
-				profile.profile_summary || "暂无摘要",
+				`## Profilkivonat`,
+				profile.profile_summary || "Nincs kivonat",
 			];
 
 			return {

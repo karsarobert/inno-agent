@@ -128,7 +128,7 @@ export function patchProfile(dataDir: string, patch: ProfilePatch): LearnerProfi
 				confidence: 0.35,
 				stability: 0.1,
 				evidence_ids: [],
-				diagnosis: "有学习接触记录，尚未形成稳定掌握度判断。",
+				diagnosis: "Van tanulási érintkezési rekord, de még nem alakult ki stabil elsajátítottsági ítélet.",
 				next_actions: [],
 			};
 			profile.knowledge_states.push(state);

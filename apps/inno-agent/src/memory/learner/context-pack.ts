@@ -38,7 +38,7 @@ export function buildContextPack(profile: LearnerProfile, recentEvents: Learning
 		.map((ks) => ({
 			concept_id: ks.concept_id,
 			mastery: ks.mastery,
-			diagnosis: ks.diagnosis || "暂无诊断",
+			diagnosis: ks.diagnosis || "Nincs diagnózis",
 		}));
 
 	// Collect active misconceptions
@@ -50,22 +50,22 @@ export function buildContextPack(profile: LearnerProfile, recentEvents: Learning
 	const teachingHints: string[] = [];
 
 	const styleMap: Record<string, string> = {
-		example_first: "例子优先",
-		code_first: "代码优先",
-		theory_first: "理论优先",
-		visual: "图示优先",
+		example_first: "Példa először",
+		code_first: "Kód először",
+		theory_first: "Elmélet először",
+		visual: "Ábra először",
 	};
 
 	const practiceMap: Record<string, string> = {
-		small_steps: "小步练习",
-		immediate_feedback: "即时反馈",
-		spaced_repetition: "间隔复习",
+		small_steps: "Kis lépéses gyakorlás",
+		immediate_feedback: "Azonnali visszajelzés",
+		spaced_repetition: "Térközös ismétlés",
 	};
 
 	const toneMap: Record<string, string> = {
-		direct: "直接",
-		encouraging: "鼓励性",
-		socratic: "苏格拉底式提问",
+		direct: "Közvetlen",
+		encouraging: "Bátorító",
+		socratic: "Szókratészi kérdezés",
 	};
 
 	for (const style of profile.preferences.explanation_style) {
@@ -78,7 +78,7 @@ export function buildContextPack(profile: LearnerProfile, recentEvents: Learning
 		if (toneMap[tone]) teachingHints.push(toneMap[tone]);
 	}
 	for (const avoid of profile.preferences.avoid) {
-		teachingHints.push(`避免：${avoid}`);
+		teachingHints.push(`Kerülendő: ${avoid}`);
 	}
 
 	const now = Date.now();
@@ -116,44 +116,44 @@ export function buildContextPack(profile: LearnerProfile, recentEvents: Learning
  * Format the context pack as a markdown section for system prompt injection.
  */
 export function formatContextPackForPrompt(pack: LearnerContextPack): string {
-	const lines: string[] = ["## 学习者上下文"];
+	const lines: string[] = ["## Tanulói kontextus"];
 
 	if (pack.active_goal) {
-		lines.push(`\n当前目标：${pack.active_goal}`);
+		lines.push(`\nAktuális cél: ${pack.active_goal}`);
 	} else {
-		lines.push("\n当前目标：暂未设定");
+		lines.push("\nAktuális cél: még nincs beállítva");
 	}
 
 	if (pack.relevant_concepts.length > 0) {
-		lines.push("\n相关概念：");
+		lines.push("\nKapcsolódó fogalmak:");
 		for (const c of pack.relevant_concepts) {
-			lines.push(`- ${c.concept_id}: 掌握度 ${c.mastery.toFixed(2)}，诊断：${c.diagnosis}`);
+			lines.push(`- ${c.concept_id}: elsajátítottság ${c.mastery.toFixed(2)}, diagnózis: ${c.diagnosis}`);
 		}
 	}
 
 	if (pack.active_misconceptions.length > 0) {
-		lines.push("\n活跃误区：");
+		lines.push("\nAktív tévhitek:");
 		for (const m of pack.active_misconceptions) {
 			lines.push(`- ${m}`);
 		}
 	}
 
 	if (pack.teaching_hints.length > 0) {
-		lines.push("\n教学提示：");
+		lines.push("\nTanítási tippek:");
 		for (const h of pack.teaching_hints) {
 			lines.push(`- ${h}`);
 		}
 	}
 
 	if (pack.review_due_concepts && pack.review_due_concepts.length > 0) {
-		lines.push("\n到期复习：");
+		lines.push("\nEsedékes ismétlés:");
 		for (const c of pack.review_due_concepts) {
-			lines.push(`- ${c.concept_id}: 掌握度 ${c.mastery.toFixed(2)}，到期 ${c.review_due_at}`);
+			lines.push(`- ${c.concept_id}: elsajátítottság ${c.mastery.toFixed(2)}, esedékesség ${c.review_due_at}`);
 		}
 	}
 
 	if (pack.recent_events && pack.recent_events.length > 0) {
-		lines.push("\n最近学习事件：");
+		lines.push("\nLegutóbbi tanulási események:");
 		for (const event of pack.recent_events) {
 			lines.push(`- ${event.timestamp.slice(0, 10)} ${event.event_type}: ${event.summary} (${event.event_id})`);
 		}

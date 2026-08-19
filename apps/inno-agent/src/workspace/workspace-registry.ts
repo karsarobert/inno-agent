@@ -35,8 +35,8 @@ const TEMP_WORKSPACE_REL_PATH = ".tmp";
 
 /** Human-readable names for channel-backed workspaces. */
 const CHANNEL_WORKSPACE_NAMES: Record<string, string> = {
-	feishu: "飞书",
-	wechat: "微信",
+	feishu: "Feishu",
+	wechat: "WeChat",
 	qq: "QQ",
 	cli: "CLI",
 };
@@ -110,9 +110,9 @@ export class WorkspaceRegistry {
 		if (defaultIdx >= 0) {
 			const def = reg.workspaces[defaultIdx];
 			ensureDir(join(this.workspaceDir, DEFAULT_WORKSPACE_REL_PATH));
-			// Legacy installs labelled this the shared "公共空间"; it is now an
+			// Legacy installs labelled this the shared "Közös tér"; it is now an
 			// ordinary, deletable workspace with no special fallback role.
-			if (def.name === "公共空间") { def.name = "默认工作区"; changed = true; }
+			if (def.name === "Közös tér") { def.name = "Alapértelmezett munkaterület"; changed = true; }
 			if (def.relPath !== DEFAULT_WORKSPACE_REL_PATH) {
 				def.relPath = DEFAULT_WORKSPACE_REL_PATH;
 				changed = true;

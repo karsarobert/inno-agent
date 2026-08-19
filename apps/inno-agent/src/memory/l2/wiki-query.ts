@@ -9,7 +9,7 @@ import type { L2Memory } from "./l2-memory.js";
  */
 export function readIndex(l2DataDir: string): string {
 	const indexPath = join(l2DataDir, "wiki", "index.md");
-	if (!fileExists(indexPath)) return "L2 Wiki 尚未初始化，暂无索引。";
+	if (!fileExists(indexPath)) return "Az L2 Wiki még nincs inicializálva; egyelőre nincs index.";
 	return readText(indexPath);
 }
 
@@ -51,19 +51,19 @@ export function queryWiki(l2DataDir: string, query: string): string {
 
 	// Empty query → just return the index overview.
 	if (!trimmed) {
-		return `## Wiki 索引\n\n${index}\n\n---\n\n提示：传入 query 参数（如「Python async」）可定位并返回相关页面内容。`;
+		return `## Wiki-index\n\n${index}\n\n---\n\nTipp: a query paraméter átadásával (pl. „Python async”) megkeresheted és visszakaphatod a kapcsolódó oldalak tartalmát.`;
 	}
 
 	const matches = searchEntries(l2DataDir, trimmed);
 
 	if (matches.length === 0) {
-		return `## Wiki 索引\n\n${index}\n\n---\n\n未找到与「${trimmed}」相关的内容。`;
+		return `## Wiki-index\n\n${index}\n\n---\n\nNem található „${trimmed}” kifejezéshez kapcsolódó tartalom.`;
 	}
 
 	const sections: string[] = [
-		`## Wiki 索引\n\n${index}`,
+		`## Wiki-index\n\n${index}`,
 		"---",
-		`## 查询结果: "${trimmed}" (${matches.length} 条匹配)`,
+		`## Keresési eredmény: "${trimmed}" (${matches.length} találat)`,
 		"",
 	];
 
@@ -91,19 +91,19 @@ export async function queryWikiHybrid(l2Memory: L2Memory, query: string): Promis
 	const trimmed = (query ?? "").trim();
 
 	if (!trimmed) {
-		return `## Wiki 索引\n\n${index}\n\n---\n\n提示：传入 query 参数（如「Python async」）可定位并返回相关页面内容。`;
+		return `## Wiki-index\n\n${index}\n\n---\n\nTipp: a query paraméter átadásával (pl. „Python async”) megkeresheted és visszakaphatod a kapcsolódó oldalak tartalmát.`;
 	}
 
 	const results = await l2Memory.search(trimmed, 5);
 	if (results === null) return queryWiki(l2DataDir, query);
 	if (results.length === 0) {
-		return `## Wiki 索引\n\n${index}\n\n---\n\n未找到与「${trimmed}」相关的内容。`;
+		return `## Wiki-index\n\n${index}\n\n---\n\nNem található „${trimmed}” kifejezéshez kapcsolódó tartalom.`;
 	}
 
 	const sections: string[] = [
-		`## Wiki 索引\n\n${index}`,
+		`## Wiki-index\n\n${index}`,
 		"---",
-		`## 查询结果: "${trimmed}" (${results.length} 条匹配)`,
+		`## Keresési eredmény: "${trimmed}" (${results.length} találat)`,
 		"",
 	];
 	for (const r of results) {

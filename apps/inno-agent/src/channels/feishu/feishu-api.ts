@@ -347,7 +347,7 @@ export class FeishuAPI {
 				header: {
 					title: {
 						tag: "plain_text",
-						content: "💭 思考过程",
+						content: "💭 Gondolkodási folyamat",
 					},
 				},
 				border: { color: "grey" },
@@ -373,7 +373,7 @@ export class FeishuAPI {
 				header: {
 					title: {
 						tag: "plain_text",
-						content: `🔧 工具调用 (${state.toolCalls.length})`,
+						content: `🔧 Eszközhívások (${state.toolCalls.length})`,
 					},
 				},
 				border: { color: "grey" },
@@ -402,7 +402,7 @@ export class FeishuAPI {
 			// Placeholder while waiting for answer
 			elements.push({
 				tag: "markdown",
-				content: state.thinkingText ? "等待回复中..." : "思考中...",
+				content: state.thinkingText ? "Válaszra vár…" : "Gondolkodás…",
 			});
 		}
 
@@ -411,7 +411,7 @@ export class FeishuAPI {
 			elements.push({ tag: "hr" });
 			elements.push({
 				tag: "markdown",
-				content: `❗ **错误**: ${state.error}`,
+				content: `❗ **Hiba**: ${state.error}`,
 			});
 		}
 
@@ -422,7 +422,7 @@ export class FeishuAPI {
 				elements: [
 					{
 						tag: "plain_text",
-						content: "✓ 回复完成",
+						content: "✓ Válasz elkészült",
 					},
 				],
 			});
@@ -452,6 +452,6 @@ export class FeishuAPI {
 
 	private truncateForCard(text: string, maxLen: number): string {
 		if (text.length <= maxLen) return text;
-		return text.slice(0, maxLen) + "\n\n... *(内容过长已截断)*";
+		return text.slice(0, maxLen) + "\n\n... *(a tartalom túl hosszú, csonkolva)*";
 	}
 }

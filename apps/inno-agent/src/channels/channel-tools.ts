@@ -63,24 +63,24 @@ function safeResolveInWorkspace(workspaceDir: string, userPath: string): string 
 export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 	const sendFileTool = defineTool({
 		name: "send_file_to_channel",
-		label: "发送文件到渠道",
+		label: "Fájl küldése csatornára",
 		description:
-			"把工作区里的某个文件发送到聊天渠道（如飞书）。" +
-			"当用户说「把 xxx 文件发给我」「发送到飞书/微信」「整理好后推给我」时调用。" +
-			"filePath 是相对于当前工作区的路径。channel 可选，缺省时使用消息来源渠道的默认推送目标。" +
-			"注意：微信(iLink) 渠道暂不支持发送文件；如果用户未配置任何渠道，会返回提示让用户去配置。",
+			"Egy munkaterületi fájl elküldése csevegőcsatornára (pl. Feishu)." +
+			"Akkor hívd, ha a felhasználó azt mondja: „küldd el nekem a xxx fájlt”, „küldd el Feishu-ra/WeChatre” vagy „amikor kész, küldd el nekem”." +
+			"A filePath a munkaterülethez viszonyított elérési út. A channel opcionális; ha nincs megadva, az üzenet forráscsatornájának alapértelmezett célját használja." +
+			"Megjegyzés: a WeChat (iLink) csatorna jelenleg nem támogatja a fájlküldést; ha a felhasználó nem konfigurált csatornát, a rendszer jelzi, hogy állítson be.",
 		parameters: Type.Object({
-			filePath: Type.String({ description: "要发送的文件路径（相对于当前工作区）" }),
+			filePath: Type.String({ description: "A küldendő fájl elérési útja (a munkaterülethez viszonyítva)" }),
 			channel: Type.Optional(
 				StringEnum(["feishu", "wechat", "qq", "wecom"] as const, {
-					description: "目标渠道（可选）。缺省时使用已注册渠道的默认推送目标。",
+					description: "Célcsatorna (opcionális). Alapértelmezésben a regisztrált csatorna alapértelmezett célját használja.",
 				}),
 			),
 			chatId: Type.Optional(
-				Type.String({ description: "推送目标 chat_id（可选）。缺省时使用该渠道的默认目标。" }),
+				Type.String({ description: "Cél chat_id (opcionális). Alapértelmezésben az adott csatorna alapértelmezett célját használja." }),
 			),
 			fileName: Type.Optional(
-				Type.String({ description: "发送时显示的文件名（可选），默认用文件本身的名字。" }),
+				Type.String({ description: "A küldéskor megjelenő fájlnév (opcionális); alapértelmezésben a fájl saját neve." }),
 			),
 		}),
 		async execute(_toolCallId, params) {
@@ -89,7 +89,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: "你还没有配置任何消息渠道，无法发送文件。请先在设置里启用并配置飞书或微信等渠道后重试。",
+						text: "Nincs beállítva üzenetcsatorna, ezért a fájl nem küldhető el. Előbb engedélyezz és konfigurálj egy csatornát (pl. Feishu vagy WeChat) a Beállításokban, majd próbáld újra.",
 					}],
 					details: { error: "no_channels_configured" } as Record<string, unknown>,
 				};
@@ -105,7 +105,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 					return {
 						content: [{
 							type: "text" as const,
-							text: `你启用了多个渠道（${names}）。请告诉我要发送到哪个渠道，或在调用时指定 channel 参数。`,
+							text: `Több csatornát engedélyeztél (${names}). Mondd meg, melyik csatornára küldjem, vagy add meg a channel paramétert a hívásnál.`,
 						}],
 						details: { error: "channel_ambiguous", available: registered.map((c) => c.name) } as Record<string, unknown>,
 					};
@@ -117,7 +117,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `渠道「${channelName}」尚未启用或配置，无法发送文件。请先在设置里启用并配置该渠道。`,
+						text: `A(z) „${channelName}” csatorna még nincs engedélyezve vagy beállítva, ezért a fájl nem küldhető el. Előbb engedélyezd és állítsd be a csatornát a Beállításokban.`,
 					}],
 					details: { error: "channel_not_registered", channel: channelName } as Record<string, unknown>,
 				};
@@ -127,7 +127,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `渠道「${channelName}」暂不支持发送文件。`,
+						text: `A(z) „${channelName}” csatorna jelenleg nem támogatja a fájlküldést.`,
 					}],
 					details: { error: "file_send_not_supported", channel: channelName } as Record<string, unknown>,
 				};
@@ -140,7 +140,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `还不知道该把文件发到「${channelName}」的哪个会话。请先从该渠道给我发一条消息（用于绑定默认目标），或在调用时指定 chatId。`,
+						text: `Még nem tudom, melyik beszélgetésbe küldjem a fájlt a(z) „${channelName}” csatornán. Előbb küldj egy üzenetet erről a csatornáról (ez rögzíti az alapértelmezett célpontot), vagy add meg a chatId-t a hívásnál.`,
 					}],
 					details: { error: "no_target", channel: channelName } as Record<string, unknown>,
 				};
@@ -153,7 +153,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `文件路径不合法或超出了工作区范围：${params.filePath}`,
+						text: `A fájl elérési útja érvénytelen vagy a munkaterületen kívülre mutat: ${params.filePath}`,
 					}],
 					details: { error: "invalid_path", filePath: params.filePath } as Record<string, unknown>,
 				};
@@ -162,7 +162,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `工作区里找不到这个文件：${params.filePath}`,
+						text: `A fájl nem található a munkaterületen: ${params.filePath}`,
 					}],
 					details: { error: "file_not_found", filePath: params.filePath } as Record<string, unknown>,
 				};
@@ -182,7 +182,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: `发送文件到「${channelName}」失败：${msg}`,
+						text: `A fájl küldése a(z) „${channelName}” csatornára sikertelen: ${msg}`,
 					}],
 					details: { error: "send_failed", channel: channelName, message: msg } as Record<string, unknown>,
 				};
@@ -200,7 +200,7 @@ export function createChannelTools(deps: ChannelToolsDeps): ToolDefinition[] {
 			return {
 				content: [{
 					type: "text" as const,
-					text: `已把文件 ${params.fileName ?? params.filePath} 发送到「${channelName}」。`,
+					text: `A fájl elküldve: ${params.fileName ?? params.filePath} → „${channelName}”.`,
 				}],
 				details: { channel: channelName, chatId, filePath: params.filePath } as Record<string, unknown>,
 			};

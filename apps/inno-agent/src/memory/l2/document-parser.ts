@@ -55,13 +55,13 @@ function validateFile(filePath: string): void {
 	const resolved = resolve(filePath);
 
 	if (!existsSync(resolved)) {
-		throw new DocumentParseError(`文件不存在: ${resolved}`, "FILE_NOT_FOUND");
+		throw new DocumentParseError(`A fájl nem létezik: ${resolved}`, "FILE_NOT_FOUND");
 	}
 
 	const ext = extname(resolved).toLowerCase();
 	if (!SUPPORTED_EXTENSIONS.has(ext)) {
 		throw new DocumentParseError(
-			`不支持的文件格式: ${ext}。支持的格式: ${[...SUPPORTED_EXTENSIONS].join(", ")}`,
+			`Nem támogatott fájlformátum: ${ext}. Támogatott formátumok: ${[...SUPPORTED_EXTENSIONS].join(", ")}`,
 			"UNSUPPORTED_FORMAT",
 		);
 	}
@@ -69,7 +69,7 @@ function validateFile(filePath: string): void {
 	const stat = statSync(resolved);
 	if (stat.size > MAX_FILE_SIZE_BYTES) {
 		throw new DocumentParseError(
-			`文件过大 (${(stat.size / 1024 / 1024).toFixed(1)}MB)，上限为 100MB`,
+			`A fájl túl nagy (${(stat.size / 1024 / 1024).toFixed(1)} MB); a felső határ 100 MB`,
 			"FILE_TOO_LARGE",
 		);
 	}
@@ -89,7 +89,7 @@ export async function parseDocument(filePath: string): Promise<ParsedDocumentRes
 		result = await parser.parse(resolved, true);
 	} catch (err) {
 		throw new DocumentParseError(
-			`解析失败: ${err instanceof Error ? err.message : String(err)}`,
+			`A feldolgozás sikertelen: ${err instanceof Error ? err.message : String(err)}`,
 			"PARSE_ERROR",
 		);
 	}
@@ -97,7 +97,7 @@ export async function parseDocument(filePath: string): Promise<ParsedDocumentRes
 	const text = result.text?.trim() ?? "";
 	if (!text) {
 		throw new DocumentParseError(
-			"文件解析结果为空。可能是扫描件（需要 OCR）或文件内容为空。",
+			"A fájl feldolgozásának eredménye üres. Lehet, hogy szkennelt dokumentum (OCR szükséges), vagy a fájl tartalma üres.",
 			"EMPTY_RESULT",
 		);
 	}
@@ -125,7 +125,7 @@ export async function screenshotDocument(filePath: string, pageNumbers?: number[
 		return await parser.screenshot(resolved, pageNumbers, true);
 	} catch (err) {
 		throw new DocumentParseError(
-			`截图生成失败: ${err instanceof Error ? err.message : String(err)}`,
+			`A képernyőkép generálása sikertelen: ${err instanceof Error ? err.message : String(err)}`,
 			"PARSE_ERROR",
 		);
 	}

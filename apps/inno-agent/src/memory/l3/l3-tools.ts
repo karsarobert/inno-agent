@@ -89,23 +89,23 @@ export function createL3Tools(
 ): ToolDefinition[] {
 	const recallTool = defineTool({
 		name: "l3_recall",
-		label: "回忆历史对话",
+		label: "Korábbi beszélgetések felidézése",
 		description:
-			"在过往会话记录（L3）中按语义/关键词检索，召回与当前问题相关的历史对话片段。" +
-			"当用户提到「上次」「之前聊过」「我们讨论过」「你还记得吗」等指向过去对话的线索，" +
-			"或你需要跨对话的上下文来连续地帮助用户时调用。结果带相关度，仅返回足够相关的片段。",
+			"Keresés a korábbi munkamenetekben (L3) szemantikus/kulcsszó alapján, és a jelenlegi kérdéshez kapcsolódó történeti beszélgetésrészletek visszakeresése." +
+			"Akkor hívd, ha a felhasználó utal a korábbi beszélgetésekre („legutóbb”, „korábban beszéltünk”, „megbeszéltük”, „emlékszel rá”)," +
+			"vagy ha a folyamatos segítséghez szükséged van a korábbi beszélgetések kontextusára. Az eredmény relevancia-értékkel érkezik; csak a kellően releváns részletek kerülnek visszaadásra.",
 		parameters: Type.Object({
 			query: Type.String({
-				description: "检索关键词或问题，如「上次说的学习计划」「之前的 Python 报错」。",
+				description: "Keresés kulcsszó vagy kérdés alapján, pl. „a legutóbb említett tanulási terv”, „a korábbi Python-hiba”.",
 			}),
 			limit: Type.Optional(
-				Type.Number({ description: "最多返回片段数，默认 4。", default: 4 }),
+				Type.Number({ description: "A visszaadott részletek maximális száma; alapértelmezés szerint 4.", default: 4 }),
 			),
 		}),
 		async execute(_toolCallId, params, _signal, _onUpdate, ctx) {
 			if (isEnabled && !isEnabled()) {
 				return {
-					content: [{ type: "text" as const, text: "跨对话历史检索（L3）已在设置中关闭，当前仅使用本工作区与当前对话上下文。" }],
+					content: [{ type: "text" as const, text: "A munkameneteken átívelő keresés (L3) ki van kapcsolva a beállításokban; jelenleg csak az aktuális munkaterület és beszélgetés kontextusa használatos." }],
 					details: { results: 0, disabled: true },
 				};
 			}
@@ -113,7 +113,7 @@ export function createL3Tools(
 			const limit = Number((params as { limit?: number }).limit ?? 4);
 			if (!query) {
 				return {
-					content: [{ type: "text" as const, text: "请提供检索关键词或问题。" }],
+					content: [{ type: "text" as const, text: "Adj meg keresési kulcsszót vagy kérdést." }],
 					details: { results: 0 },
 				};
 			}
@@ -138,7 +138,7 @@ export function createL3Tools(
 			const results = (await memory.recall(query, current || undefined)).slice(0, Math.max(1, limit));
 			if (results.length === 0) {
 				return {
-					content: [{ type: "text" as const, text: `未在历史对话中找到与「${query}」足够相关的内容。` }],
+					content: [{ type: "text" as const, text: `Nem található a „${query}” kifejezéshez kellően kapcsolódó tartalom a korábbi beszélgetésekben.` }],
 					details: { results: 0 },
 				};
 			}

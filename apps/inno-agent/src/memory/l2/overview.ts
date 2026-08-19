@@ -19,13 +19,13 @@ import { readManifest } from "./manifest-store.js";
 import { buildWikiGraph, computeWikiGraphStats, OVERVIEW_PATH, type WikiGraphStats } from "./wiki-graph.js";
 import { logger } from "../../logger.js";
 
-const OVERVIEW_TITLE = "知识库总览";
+const OVERVIEW_TITLE = "Tudásbázis-áttekintés";
 
 const TYPE_LABELS: Record<string, string> = {
-	"source-summary": "资料摘要",
-	entity: "实体",
-	concept: "概念",
-	analysis: "分析",
+	"source-summary": "Anyagkivonat",
+	entity: "Entitások",
+	concept: "Fogalmak",
+	analysis: "Elemzés",
 };
 
 function basename(path: string): string {
@@ -33,7 +33,7 @@ function basename(path: string): string {
 }
 
 function renderDeterministic(stats: WikiGraphStats): string {
-	const lines: string[] = ["## 概况", "", `- 页面总数：${stats.totalPages}`];
+	const lines: string[] = ["## Áttekintés", "", `- Oldalak száma: ${stats.totalPages}`];
 	for (const [type, count] of Object.entries(stats.typeCounts).sort((a, b) => b[1] - a[1])) {
 		lines.push(`- ${TYPE_LABELS[type] ?? type}：${count}`);
 	}
@@ -41,21 +41,21 @@ function renderDeterministic(stats: WikiGraphStats): string {
 	const { communities } = stats;
 	lines.push(
 		"",
-		"## 主题社区",
+		"## Témaközösség",
 		"",
-		`- 社区数：${communities.count}（模块度 ${communities.modularity}）`,
+		`- Közösségek száma: ${communities.count} (modularitás ${communities.modularity})`,
 	);
 	if (communities.lowCohesion.length > 0) {
-		lines.push(`- ⚠️ 低内聚社区 ${communities.lowCohesion.length} 个（内聚度 < 0.15，建议拆分或补充连接）`);
+		lines.push(`- ⚠️ ${communities.lowCohesion.length} alacsony kohéziójú közösség (kohézió < 0.15; javasolt szétválasztás vagy kapcsolatok kiegészítése)`);
 	}
 
-	lines.push("", "## 核心节点（按关联度）", "");
+	lines.push("", "## Központi csomópontok (relevancia szerint)", "");
 	const top = stats.topByDegree.filter((t) => t.type === "entity" || t.type === "concept");
 	if (top.length === 0) {
-		lines.push("<!-- 暂无足够的双链关联 -->");
+		lines.push("<!-- Nincs elég kétirányú hivatkozás -->");
 	} else {
 		for (const t of top) {
-			lines.push(`- [[${t.title}]] — ${TYPE_LABELS[t.type] ?? t.type}，关联 ${t.degree}`);
+			lines.push(`- [[${t.title}]] — ${TYPE_LABELS[t.type] ?? t.type}, kapcsolatok: ${t.degree}`);
 		}
 	}
 
@@ -64,31 +64,31 @@ function renderDeterministic(stats: WikiGraphStats): string {
 		maintenance.orphans.length + maintenance.missing.length + maintenance.duplicates.length + maintenance.contested.length >
 		0;
 	if (hasMaintenance) {
-		lines.push("", "## 维护建议", "");
+		lines.push("", "## Karbantartási javaslatok", "");
 		if (maintenance.duplicates.length > 0) {
-			lines.push(`- 疑似重复页 ${maintenance.duplicates.length} 组（标题高度相近，建议合并）：`);
+			lines.push(`- ${maintenance.duplicates.length} feltételezhetően duplikált oldal (nagyon hasonló címek; javasolt egyesítés):`);
 			for (const group of maintenance.duplicates.slice(0, 5)) {
 				lines.push(`  - ${group.map((p) => `\`${basename(p)}\``).join(" ↔ ")}`);
 			}
 		}
 		if (maintenance.missing.length > 0) {
 			const links = [...new Set(maintenance.missing.map((m) => m.link))];
-			lines.push(`- 断链 ${links.length} 处（引用了不存在的页面，建议建页或修链接）：${links.slice(0, 8).map((l) => `[[${l}]]`).join("、")}`);
+			lines.push(`- ${links.length} törött hivatkozás (nem létező oldalra mutat; javasolt oldal létrehozása vagy a hivatkozás javítása): ${links.slice(0, 8).map((l) => `[[${l}]]`).join("、")}`);
 		}
 		if (maintenance.orphans.length > 0) {
-			lines.push(`- 孤立页 ${maintenance.orphans.length} 个（无任何双链，建议补充关联）：${maintenance.orphans.slice(0, 8).map((p) => `[[${basename(p)}]]`).join("、")}`);
+			lines.push(`- ${maintenance.orphans.length} elszigetelt oldal (nincs kétirányú hivatkozása; javasolt kapcsolatok kiegészítése): ${maintenance.orphans.slice(0, 8).map((p) => `[[${basename(p)}]]`).join("、")}`);
 		}
 		if (maintenance.contested.length > 0) {
-			lines.push(`- 存在争议的页面 ${maintenance.contested.length} 个：${maintenance.contested.slice(0, 8).map((p) => `[[${basename(p)}]]`).join("、")}`);
+			lines.push(`- Vitatott oldalak: ${maintenance.contested.length} db: ${maintenance.contested.slice(0, 8).map((p) => `[[${basename(p)}]]`).join("、")}`);
 		}
 	}
 
 	return lines.join("\n");
 }
 
-const NARRATIVE_PROMPT = `你是学习 Wiki 知识库的总览撰写助手。根据下面的统计信息，用一到两段简洁中文，概述这个知识库当前覆盖了哪些主题、核心线索是什么。只写概述段落，不要列表、不要标题、不要代码块。
+const NARRATIVE_PROMPT = `Te vagy a tanulási Wiki tudásbázis áttekintés-író asszisztense. Az alábbi statisztikai adatok alapján egy-két tömör magyar bekezdésben foglald össze, mely témákat fedi le jelenleg ez a tudásbázis, és mik a fő szálak. Csak összefoglaló bekezdést írj; ne használj listát, címet vagy kódblokkot.
 
-统计信息：
+Statisztikai adatok:
 {stats}`;
 
 async function generateNarrative(

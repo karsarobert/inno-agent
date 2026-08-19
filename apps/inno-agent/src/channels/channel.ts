@@ -4,7 +4,7 @@ import { readJson, writeJson } from "../storage/file-store.js";
 /** Thrown when a channel cannot send files (e.g. WeChat iLink). */
 export class FileSendNotSupportedError extends Error {
 	constructor(channelName: string) {
-		super(`渠道「${channelName}」暂不支持发送文件。`);
+		super(`A(z) „${channelName}” csatorna jelenleg nem támogatja a fájlküldést.`);
 		this.name = "FileSendNotSupportedError";
 	}
 }

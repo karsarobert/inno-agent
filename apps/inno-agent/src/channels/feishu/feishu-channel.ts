@@ -171,7 +171,7 @@ export class FeishuChannel implements RealtimeChatChannel, StreamingReplyChannel
 				const content = JSON.parse(contentStr) as { image_key: string };
 				const attachment = await this.downloadResource(messageId, content.image_key, "image");
 				if (attachment) attachments.push(attachment);
-				text = "[用户发送了一张图片]";
+				text = "[A felhasználó egy képet küldött]";
 			} else if (messageType === "file") {
 				const content = JSON.parse(contentStr) as { file_key: string; file_name: string };
 				const attachment = await this.downloadResource(
@@ -179,7 +179,7 @@ export class FeishuChannel implements RealtimeChatChannel, StreamingReplyChannel
 				);
 				if (attachment) {
 					attachments.push(attachment);
-					text = `[用户发送了文件: ${content.file_name}]`;
+					text = `[A felhasználó fájlt küldött: ${content.file_name}]`;
 				}
 			}
 

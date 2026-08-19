@@ -9,7 +9,7 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { logger } from "../logger.js";
 
-const NEW_SESSION_COMMANDS = new Set(["/new", "新建对话", "新建会话"]);
+const NEW_SESSION_COMMANDS = new Set(["/new", "Új beszélgetés", "Új munkamenet"]);
 const MAX_TEXT_LENGTH = 20_000;
 
 /** Callback type for streaming prompt execution. */
@@ -87,10 +87,10 @@ export class PersonalChannelDispatcher {
 					this.saveChatSessionMap();
 					logger.info({ chatKey, newSessionId }, "dispatcher bound chat to session");
 				}
-				await channel.reply(msg, `已新建会话：${newSessionId}\n后续消息将在新会话中继续。`);
+				await channel.reply(msg, `Új munkamenet létrehozva: ${newSessionId}\nA további üzenetek az új munkamenetben folytatódnak.`);
 			} catch (err) {
 				logger.error({ err }, "dispatcher new session error");
-				await this.safeReply(channel, msg, "新建会话失败，请稍后重试。");
+				await this.safeReply(channel, msg, "Az új munkamenet létrehozása sikertelen; próbáld újra később.");
 			}
 			return;
 		}
@@ -108,16 +108,16 @@ export class PersonalChannelDispatcher {
 			}
 		}
 
-		let prompt = `[消息来源渠道: ${msg.channel}]\n${msg.text}`;
+		let prompt = `[Üzenet forráscsatornája: ${msg.channel}]\n${msg.text}`;
 		if (prompt.length > MAX_TEXT_LENGTH) {
 			prompt = prompt.slice(0, MAX_TEXT_LENGTH);
-			await this.safeReply(channel, msg, "消息过长，已截断处理。");
+			await this.safeReply(channel, msg, "Az üzenet túl hosszú; csonkolva lett.");
 		}
 
 		if (msg.attachments) {
 			for (const att of msg.attachments) {
 				if (att.type === "file" && att.filePath) {
-					prompt += `\n\n[附件已下载到: ${att.filePath}]`;
+					prompt += `\n\n[A melléklet letöltve ide: ${att.filePath}]`;
 				}
 			}
 		}
@@ -204,7 +204,7 @@ export class PersonalChannelDispatcher {
 				error: err instanceof Error ? err.message : String(err),
 			});
 			logger.error({ err }, "dispatcher agent error");
-			await this.safeReply(channel, msg, "这次处理失败了，请稍后重试。");
+			await this.safeReply(channel, msg, "A feldolgozás sikertelen; próbáld újra később.");
 		}
 	}
 

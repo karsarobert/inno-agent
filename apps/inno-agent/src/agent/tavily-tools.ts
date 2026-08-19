@@ -25,7 +25,7 @@ function resolveApiKey(holder: ConfigHolder): string | undefined {
 function formatResults(resp: TavilySearchResponse): string {
 	const parts: string[] = [];
 	if (resp.answer?.trim()) {
-		parts.push(`## 摘要\n\n${resp.answer.trim()}`);
+		parts.push(`## Összegzés\n\n${resp.answer.trim()}`);
 	}
 	const results = resp.results ?? [];
 	if (results.length > 0) {
@@ -33,36 +33,36 @@ function formatResults(resp: TavilySearchResponse): string {
 			const published = r.publishedDate ? ` (${r.publishedDate})` : "";
 			return `${i + 1}. [${r.title}](${r.url})${published}\n   ${r.content}`;
 		});
-		parts.push(`## 搜索结果\n\n${lines.join("\n\n")}`);
+		parts.push(`## Keresési eredmények\n\n${lines.join("\n\n")}`);
 	}
-	return parts.join("\n\n") || "未找到相关结果。";
+	return parts.join("\n\n") || "Nem található releváns eredmény.";
 }
 
 export function createTavilyTools(configHolder: ConfigHolder): ToolDefinition[] {
 	const tool = defineTool({
 		name: "web_search",
-		label: "联网搜索 (Tavily)",
+		label: "Internetes keresés (Tavily)",
 		description:
-			"通过 Tavily 搜索引擎联网检索最新信息，返回结果标题、URL、内容摘要和可选的综合答案。" +
-			"当用户的问题涉及时事、最新资讯、超出知识截止日期的事实，或明确要求联网查询时使用。" +
-			"优先用用户的语言构造 query；复杂或时效性强的查询可将 searchDepth 设为 advanced。",
+			"A Tavily keresőmotorral friss információkat keres az interneten; visszaadja az eredmények címét, URL-jét, tartalmi kivonatát és opcionálisan az összesített választ." +
+			"Akkor használd, ha a felhasználó kérdése aktuális eseményekre, friss hírekre, a tudáshatáridőn túli tényekre vonatkozik, vagy kifejezetten internetes keresést kér." +
+			"A query-t lehetőleg a felhasználó nyelvén fogalmazd meg; bonyolult vagy időérzékeny lekérdezéseknél a searchDepth advanced értéket is kaphat.",
 		parameters: Type.Object({
-			query: Type.String({ description: "搜索查询词" }),
+			query: Type.String({ description: "Keresőkifejezés" }),
 			searchDepth: Type.Optional(
 				Type.Union([Type.Literal("basic"), Type.Literal("advanced")], {
-					description: "检索深度：basic 快速（默认），advanced 更全但更慢更贵",
+					description: "Keresési mélység: basic gyors (alapértelmezett), advanced alaposabb, de lassabb és drágább",
 				}),
 			),
 			maxResults: Type.Optional(
-				Type.Number({ description: `返回结果条数（1-${MAX_RESULTS_LIMIT}，默认 ${DEFAULT_MAX_RESULTS}）` }),
+				Type.Number({ description: `Visszaadott találatok száma (1-${MAX_RESULTS_LIMIT}, alapértelmezés ${DEFAULT_MAX_RESULTS})` }),
 			),
 			topic: Type.Optional(
 				Type.Union([Type.Literal("general"), Type.Literal("news"), Type.Literal("finance")], {
-					description: "搜索主题：general（默认）/ news / finance",
+					description: "Keresési téma: general (alapértelmezett) / news / finance",
 				}),
 			),
 			includeAnswer: Type.Optional(
-				Type.Boolean({ description: "是否返回 Tavily 综合摘要答案（默认 true）" }),
+				Type.Boolean({ description: "Visszaadja-e a Tavily összesített válaszát (alapértelmezés szerint true)" }),
 			),
 		}),
 		async execute(_toolCallId, params) {
@@ -76,7 +76,7 @@ export function createTavilyTools(configHolder: ConfigHolder): ToolDefinition[] 
 			const query = String(typed.query ?? "").trim();
 			if (!query) {
 				return {
-					content: [{ type: "text" as const, text: "请提供 query（搜索查询词）。" }],
+					content: [{ type: "text" as const, text: "Adj meg egy query értéket (keresőkifejezést)." }],
 					details: { error: "missing_query" } as Record<string, unknown>,
 				};
 			}
@@ -86,7 +86,7 @@ export function createTavilyTools(configHolder: ConfigHolder): ToolDefinition[] 
 				return {
 					content: [{
 						type: "text" as const,
-						text: "尚未配置 Tavily API Key。请在设置面板的「联网搜索 (Tavily)」卡片填入 API Key 后重试。",
+						text: "A Tavily API-kulcs nincs beállítva. Töltsd ki az API-kulcsot a Beállítások „Internetes keresés (Tavily)” kártyáján, majd próbáld újra.",
 					}],
 					details: { error: "tavily_not_configured" } as Record<string, unknown>,
 				};
@@ -124,7 +124,7 @@ export function createTavilyTools(configHolder: ConfigHolder): ToolDefinition[] 
 				logger.warn({ err, query }, "web_search: tavily search failed");
 				const msg = err instanceof Error ? err.message : String(err);
 				return {
-					content: [{ type: "text" as const, text: `联网搜索失败：${msg}` }],
+					content: [{ type: "text" as const, text: `Az internetes keresés sikertelen: ${msg}` }],
 					details: { error: "search_failed", query, message: msg } as Record<string, unknown>,
 				};
 			}

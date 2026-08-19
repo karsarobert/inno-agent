@@ -89,7 +89,7 @@ function archiveMatchingKnowledge(profile: LearnerProfile, targetText: string): 
 	let changed = false;
 	for (const state of profile.knowledge_states) {
 		if (!targetMatchesKnowledge(state, targetText)) continue;
-		const diagnosis = "相关学习目标已归档；除非用户重新提出该方向，否则不再主动安排该概念学习。";
+		const diagnosis = "A kapcsolódó tanulási cél archiválva lett; amíg a felhasználó újra nem hozza ezt az irányt, a fogalom tanulása nem kerül aktívan ütemezésre.";
 		if (
 			state.diagnosis !== diagnosis ||
 			state.next_actions.length > 0 ||
@@ -119,28 +119,28 @@ function mapPreference(raw: string): Partial<LearnerPreferences> {
 	const lowered = text.toLowerCase();
 	if (!text) return {};
 
-	if (text.includes("避免") || lowered.startsWith("avoid")) {
+	if (text.includes("Kerülendő") || lowered.startsWith("avoid")) {
 		return { avoid: [text.replace(/^避免[:：]?\s*/, "")] };
 	}
-	if (lowered.includes("code") || text.includes("代码")) {
+	if (lowered.includes("code") || text.includes("Kód")) {
 		return { explanation_style: ["code_first"] };
 	}
-	if (lowered.includes("example") || text.includes("例子") || text.includes("示例")) {
+	if (lowered.includes("example") || text.includes("Példa") || text.includes("Példák")) {
 		return { explanation_style: ["example_first"] };
 	}
-	if (text.includes("理论") || lowered.includes("theory")) {
+	if (text.includes("Elmélet") || lowered.includes("theory")) {
 		return { explanation_style: ["theory_first"] };
 	}
-	if (text.includes("小步") || lowered.includes("small")) {
+	if (text.includes("Kis lépések") || lowered.includes("small")) {
 		return { practice_style: ["small_steps"] };
 	}
-	if (text.includes("即时") || text.includes("反馈") || lowered.includes("feedback")) {
+	if (text.includes("Azonnali") || text.includes("Visszajelzés") || lowered.includes("feedback")) {
 		return { practice_style: ["immediate_feedback"], feedback_tone: ["encouraging"] };
 	}
-	if (text.includes("鼓励") || lowered.includes("encourag")) {
+	if (text.includes("Bátorítás") || lowered.includes("encourag")) {
 		return { feedback_tone: ["encouraging"] };
 	}
-	if (text.includes("苏格拉底") || lowered.includes("socratic")) {
+	if (text.includes("Szókratészi") || lowered.includes("socratic")) {
 		return { feedback_tone: ["socratic"] };
 	}
 	return {};
@@ -176,8 +176,8 @@ function ensureKnowledgeState(profile: LearnerProfile, conceptId: string): Knowl
 		confidence: 0.35,
 		stability: 0.1,
 		evidence_ids: [],
-		diagnosis: "有学习接触记录，尚未形成稳定掌握度判断。",
-		next_actions: ["继续通过讲解、练习或复盘补充证据。"],
+		diagnosis: "Van tanulási érintkezési rekord, de még nem alakult ki stabil elsajátítottsági ítélet.",
+		next_actions: ["Folytasd a bizonyítékgyűjtést magyarázattal, gyakorlással vagy visszatekintéssel."],
 	};
 	profile.knowledge_states.push(state);
 	return state;
@@ -245,10 +245,10 @@ function updateKnowledgeFromEvent(profile: LearnerProfile, event: LearningEvent)
 				diagnosis: state.diagnosis,
 				next_actions: state.next_actions,
 			});
-			state.diagnosis = `最近学习/讨论了「${topic}」，需要后续练习验证掌握度。`;
+			state.diagnosis = `Nemrég tanulta/beszélte meg a(z) „${topic}” témát; későbbi gyakorlással kell ellenőrizni az elsajátítottságot.`;
 			state.next_actions = uniqueStrings([
-				`用自己的话复述 ${state.concept_name} 的核心机制。`,
-				`完成一个小练习来验证 ${state.concept_name} 的掌握情况。`,
+				`Mondd el saját szavaiddal a(z) ${state.concept_name} alapmechanizmusát.`,
+				`Végezz el egy kis gyakorlatot a(z) ${state.concept_name} elsajátítottságának ellenőrzéséhez.`,
 				...state.next_actions,
 			]).slice(0, 5);
 			const after = JSON.stringify({
@@ -369,7 +369,7 @@ function appendSummary(profile: LearnerProfile, event: LearningEvent): boolean {
 
 	if (!label) return false;
 
-	const sentence = `最近记录：${label}（${event.event_type}，${event.timestamp.slice(0, 10)}）。`;
+	const sentence = `Legutóbbi rekord: ${label} (${event.event_type}, ${event.timestamp.slice(0, 10)}).`;
 	if (profile.profile_summary.includes(sentence)) return false;
 
 	const base = profile.profile_summary.trim();
@@ -397,7 +397,7 @@ export function learningEventSummarySentence(event: LearningEvent): string | und
 						: conceptIds[0];
 
 	if (!label) return undefined;
-	return `最近记录：${label}（${event.event_type}，${event.timestamp.slice(0, 10)}）。`;
+	return `Legutóbbi rekord: ${label} (${event.event_type}, ${event.timestamp.slice(0, 10)}).`;
 }
 
 export function applyLearningEventToProfile(

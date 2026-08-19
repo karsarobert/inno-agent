@@ -14,10 +14,10 @@ import { logger } from "../../logger.js";
 const L2_SCHEMA_VERSION = "1.0";
 
 const TYPE_SECTION_MAP: Record<WikiPageType, string> = {
-	"source-summary": "## 资料摘要 (Sources)",
-	entity: "## 实体 (Entities)",
-	concept: "## 概念 (Concepts)",
-	analysis: "## 分析 (Analysis)",
+	"source-summary": "## Anyagkivonat (Sources)",
+	entity: "## Entitások (Entities)",
+	concept: "## Fogalmak (Concepts)",
+	analysis: "## Elemzés (Analysis)",
 };
 
 const TYPE_DIR_MAP: Record<WikiPageType, string> = {
@@ -185,22 +185,22 @@ contradictions: []
 function initialIndexContent(): string {
 	const today = new Date().toISOString().slice(0, 10);
 	return [
-		"# L2 Wiki 索引",
+		"# L2 Wiki-index",
 		"",
 		"> Content catalog. Every wiki page is listed under its type with a one-line summary.",
 		"> Read this first before L2 maintenance to avoid duplicate pages.",
 		`> Last updated: ${today} | Total pages: 0`,
 		"",
-		"## 资料摘要 (Sources)",
+		"## Anyagkivonat (Sources)",
 		"<!-- none yet -->",
 		"",
-		"## 实体 (Entities)",
+		"## Entitások (Entities)",
 		"<!-- none yet -->",
 		"",
-		"## 概念 (Concepts)",
+		"## Fogalmak (Concepts)",
 		"<!-- none yet -->",
 		"",
-		"## 分析 (Analysis)",
+		"## Elemzés (Analysis)",
 		"<!-- none yet -->",
 		"",
 	].join("\n");
@@ -285,7 +285,7 @@ export function createSourcePage(
 		status: "draft",
 		confidence: "medium",
 	};
-	const ref = extractedPath ? `\n## 来源\n\n完整提取文本: \`${extractedPath}\`\n` : "";
+	const ref = extractedPath ? `\n## Forrás\n\nTeljes kinyert szöveg: \`${extractedPath}\`\n` : "";
 	const body = `\n# ${entry.title}\n\n${summaryBody}\n${ref}`;
 	writeText(join(dir, filename), serializeFrontmatter(fm) + body);
 	return join("wiki", "sources", filename);
@@ -321,7 +321,7 @@ export function rebuildIndex(l2DataDir: string, entries: ManifestEntry[]): void 
 	const allPages = listWikiPagesForIndex(l2DataDir, entries);
 	const totalPages = allPages.length;
 	const lines: string[] = [
-		"# L2 Wiki 索引",
+		"# L2 Wiki-index",
 		"",
 		"> Content catalog. Every wiki page is listed under its type with a one-line summary.",
 		"> Read this first before L2 maintenance to avoid duplicate pages.",

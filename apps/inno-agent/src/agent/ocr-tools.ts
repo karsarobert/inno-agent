@@ -105,7 +105,7 @@ async function submitJob(cfg: OcrApiConfig, filePath: string, signal: AbortSigna
 	// Local file mode — multipart/form-data with file, model, optionalPayload.
 	const localPath = resolveLocalPath(filePath);
 	if (!localPath || !existsSync(localPath) || !statSync(localPath).isFile()) {
-		throw new Error(`找不到图片文件：${filePath}`);
+		throw new Error(`A képfájl nem található: ${filePath}`);
 	}
 	const buffer = readFileSync(localPath);
 	const form = new FormData();
@@ -191,15 +191,15 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
 export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 	const tool = defineTool({
 		name: "ocr_image",
-		label: "图片文字识别 (OCR)",
+		label: "Képszöveg-felismerés (OCR)",
 		description:
-			"调用百度 vl-ocr（PaddleOCR-VL）API 提取图片中的文字，返回 markdown 文本。" +
-			"当当前接入的模型不支持图片识别，或图片识别失败时调用。" +
-			"filePath 可以是工作区相对路径，也可以是 http(s) URL。" +
-			"支持 PNG / JPG / JPEG / GIF / WEBP / TIFF / PDF 等常见格式。",
+			"A Baidu vl-ocr (PaddleOCR-VL) API meghívása a képek szövegének kinyeréséhez; markdown szöveget ad vissza." +
+			"Akkor hívd, ha a jelenlegi modell nem támogatja a képfelismerést, vagy a képfelismerés sikertelen." +
+			"A filePath lehet munkaterület-relative elérési út vagy http(s) URL is." +
+			"Gyakori formátumok támogatottak: PNG / JPG / JPEG / GIF / WEBP / TIFF / PDF.",
 		parameters: Type.Object({
 			filePath: Type.String({
-				description: "要识别的图片路径（工作区相对路径、绝对路径或 http(s) URL）",
+				description: "A felismerendő kép elérési útja (munkaterület-relative, abszolút vagy http(s) URL)",
 			}),
 		}),
 		async execute(_toolCallId, params) {
@@ -207,7 +207,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 			const filePath = String(typed.filePath ?? "").trim();
 			if (!filePath) {
 				return {
-					content: [{ type: "text" as const, text: "请提供 filePath（图片路径或 URL）。" }],
+					content: [{ type: "text" as const, text: "Adj meg filePath értéket (kép elérési út vagy URL)." }],
 					details: { error: "missing_file_path" } as Record<string, unknown>,
 				};
 			}
@@ -217,7 +217,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 				return {
 					content: [{
 						type: "text" as const,
-						text: "尚未配置 OCR API token。请在设置面板的「OCR API」卡片填入 token 后重试。",
+						text: "Az OCR API token nincs beállítva. Töltsd ki a tokent a Beállítások „OCR API” kártyáján, majd próbáld újra.",
 					}],
 					details: { error: "ocr_not_configured" } as Record<string, unknown>,
 				};
@@ -235,7 +235,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 					logger.warn({ err, filePath }, "ocr_image: submit failed");
 					const msg = err instanceof Error ? err.message : String(err);
 					return {
-						content: [{ type: "text" as const, text: `OCR 任务提交失败：${msg}` }],
+						content: [{ type: "text" as const, text: `Az OCR feladat elküldése sikertelen: ${msg}` }],
 						details: { error: "submit_failed", filePath, message: msg } as Record<string, unknown>,
 					};
 				}
@@ -245,14 +245,14 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 				let status: JobStatus;
 				while (true) {
 					await sleep(POLL_INTERVAL_MS, signal).catch(() => {
-						throw new Error("OCR 轮询被中断（超时或取消）");
+						throw new Error("Az OCR lekérdezés megszakadt (időtúllépés vagy törlés)");
 					});
 					status = await pollJob(cfg, jobId, AbortSignal.timeout(REQUEST_TIMEOUT_MS));
 					if (status.state === "done") break;
 					if (status.state === "failed") {
-						const msg = status.errorMsg || "OCR 任务失败（未提供错误详情）";
+						const msg = status.errorMsg || "Az OCR feladat sikertelen (nincs hibarészlet)";
 						return {
-							content: [{ type: "text" as const, text: `OCR 任务失败：${msg}` }],
+							content: [{ type: "text" as const, text: `Az OCR feladat sikertelen: ${msg}` }],
 							details: { error: "job_failed", jobId, message: msg } as Record<string, unknown>,
 						};
 					}
@@ -262,7 +262,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 				const jsonUrl = status.resultUrl?.jsonUrl;
 				if (!jsonUrl) {
 					return {
-						content: [{ type: "text" as const, text: "OCR 任务完成但未返回结果 URL。" }],
+						content: [{ type: "text" as const, text: "Az OCR feladat befejeződött, de nem adott vissza eredmény-URL-t." }],
 						details: { error: "missing_result_url", jobId } as Record<string, unknown>,
 					};
 				}
@@ -270,7 +270,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 				const markdown = await fetchResult(jsonUrl, AbortSignal.timeout(REQUEST_TIMEOUT_MS));
 				if (!markdown.trim()) {
 					return {
-						content: [{ type: "text" as const, text: "OCR 完成，但未从图片中提取到任何文字。" }],
+						content: [{ type: "text" as const, text: "Az OCR elkészült, de nem nyert ki szöveget a képből." }],
 						details: { jobId, pages: 0 } as Record<string, unknown>,
 					};
 				}
@@ -287,7 +287,7 @@ export function createOcrTools(configHolder: ConfigHolder): ToolDefinition[] {
 				logger.warn({ err, filePath }, "ocr_image: overall failed");
 				const msg = err instanceof Error ? err.message : String(err);
 				return {
-					content: [{ type: "text" as const, text: `OCR 处理失败：${msg}` }],
+					content: [{ type: "text" as const, text: `Az OCR feldolgozás sikertelen: ${msg}` }],
 					details: { error: "ocr_failed", filePath, message: msg } as Record<string, unknown>,
 				};
 			} finally {

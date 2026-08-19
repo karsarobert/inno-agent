@@ -135,13 +135,13 @@ function formatWhen(ts: number): string {
 export function formatRecallForPrompt(results: RecallResult[]): string {
 	if (results.length === 0) return "";
 	const lines: string[] = [
-		"# 相关历史对话（来自过往会话，仅供参考）",
+		"# Kapcsolódó korábbi beszélgetések (korábbi munkamenetekből, tájékoztatásul)",
 		"",
-		"以下片段来自你与该用户的早期对话，按相关度排序。若与当前问题相关可参考，不相关请忽略：",
+		"Az alábbi részletek a felhasználóval folytatott korábbi beszélgetésekből származnak, relevancia szerint rendezve. Ha kapcsolódnak az aktuális kérdéshez, használd őket; ha nem, hagyd figyelmen kívül:",
 		"",
 	];
 	results.forEach((r, i) => {
-		const who = r.role === "user" ? "用户" : "你";
+		const who = r.role === "user" ? "Felhasználó" : "Te";
 		const when = formatWhen(r.ts);
 		const meta = [who, when].filter(Boolean).join(" · ");
 		lines.push(`${i + 1}. [${meta}] ${clip(r.text)}`);
