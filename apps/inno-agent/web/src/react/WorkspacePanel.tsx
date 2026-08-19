@@ -53,12 +53,12 @@ export function WorkspacePanel({ activeTab, mode, width, onTabChange, onModeChan
 	const { t } = useTranslation();
 	const [isResizing, setIsResizing] = useState(false);
 
-	// In Simple Mode, hide the advanced tabs: notebook (L2 wiki), profile (L1),
-	// jobs (scheduled tasks) and skills — leaving just preview + settings.
-	// For students, additionally hide the settings tab (teacher-only).
+	// In Simple Mode, hide the advanced tabs: notebook (L2 wiki), profile (L1)
+	// and jobs (scheduled tasks) — leaving preview + skills. The skills tab is
+	// kept: students must be able to browse and install skills from the library.
 	const simpleMode = useStoreSnapshot(settingsStore, () => settingsStore.settings?.simpleMode?.enabled === true);
 	const isStudent = useStoreSnapshot(settingsStore, () => settingsStore.settings?.userRole === "student");
-	const HIDDEN_IN_SIMPLE: RightPanelTab[] = ["notebook", "profile", "jobs", "skills"];
+	const HIDDEN_IN_SIMPLE: RightPanelTab[] = ["notebook", "profile", "jobs"];
 	const hiddenTabs: RightPanelTab[] = [...HIDDEN_IN_SIMPLE, ...(isStudent ? (["settings"] as RightPanelTab[]) : [])];
 	const tabs = simpleMode || isStudent ? TAB_ORDER.filter((tab) => !hiddenTabs.includes(tab)) : TAB_ORDER;
 
