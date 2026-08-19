@@ -74,6 +74,8 @@ export interface ChannelsSettingsPayload {
 export interface InnoSettings {
 	defaultProvider: string;
 	defaultModel: string;
+	/** A felhasználó szerepköre; "student" esetén a beállítások rejtve. */
+	userRole?: "teacher" | "student";
 	configuredModels?: InnoModelInfo[];
 	availableModels?: InnoModelInfo[];
 	providers: Record<string, InnoProviderSettings>;

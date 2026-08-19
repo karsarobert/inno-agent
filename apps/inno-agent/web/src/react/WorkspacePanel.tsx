@@ -55,18 +55,21 @@ export function WorkspacePanel({ activeTab, mode, width, onTabChange, onModeChan
 
 	// In Simple Mode, hide the advanced tabs: notebook (L2 wiki), profile (L1),
 	// jobs (scheduled tasks) and skills — leaving just preview + settings.
+	// For students, additionally hide the settings tab (teacher-only).
 	const simpleMode = useStoreSnapshot(settingsStore, () => settingsStore.settings?.simpleMode?.enabled === true);
+	const isStudent = useStoreSnapshot(settingsStore, () => settingsStore.settings?.userRole === "student");
 	const HIDDEN_IN_SIMPLE: RightPanelTab[] = ["notebook", "profile", "jobs", "skills"];
-	const tabs = simpleMode ? TAB_ORDER.filter((tab) => !HIDDEN_IN_SIMPLE.includes(tab)) : TAB_ORDER;
+	const hiddenTabs: RightPanelTab[] = [...HIDDEN_IN_SIMPLE, ...(isStudent ? (["settings"] as RightPanelTab[]) : [])];
+	const tabs = simpleMode || isStudent ? TAB_ORDER.filter((tab) => !hiddenTabs.includes(tab)) : TAB_ORDER;
 
-	// If Simple Mode turns on while a now-hidden tab is active, fall back to preview
-	// so the panel never shows a hidden/blank view.
+	// If a now-hidden tab is active, fall back to preview so the panel never
+	// shows a hidden/blank view.
 	useEffect(() => {
-		if (simpleMode && HIDDEN_IN_SIMPLE.includes(activeTab)) {
+		if ((simpleMode || isStudent) && hiddenTabs.includes(activeTab)) {
 			onTabChange("preview");
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [simpleMode, activeTab, onTabChange]);
+	}, [simpleMode, isStudent, activeTab, onTabChange]);
 
 	useEffect(() => {
 		if (!isResizing) return;

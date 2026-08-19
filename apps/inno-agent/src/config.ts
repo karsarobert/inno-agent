@@ -154,6 +154,11 @@ export interface InnoConfig {
 	subagents?: InnoSubagentsConfig;
 	memory?: InnoMemoryConfig;
 	simpleMode?: InnoSimpleModeConfig;
+	/**
+	 * A felhasználó szerepköre. "student" esetén a webes felület a beállításokat
+	 * elrejti és a Simple Mode-ot rögzíti (nincs módváltás). Alapértelmezés: "teacher".
+	 */
+	userRole?: "teacher" | "student";
 	ui?: {
 		theme: string;
 	};
@@ -332,6 +337,7 @@ export function normalizeConfig(config: LegacyInnoConfig): InnoConfig {
 		subagents: config.subagents,
 		memory: normalizeMemoryConfig(config.memory),
 		simpleMode: normalizeSimpleModeConfig(config.simpleMode),
+		userRole: config.userRole === "student" ? "student" : "teacher",
 		ui: config.ui,
 		ocrApi: config.ocrApi,
 		tavily: config.tavily,

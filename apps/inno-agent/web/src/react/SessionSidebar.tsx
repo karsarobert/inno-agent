@@ -497,15 +497,16 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 		activeWorkspaceId: workspaceStore.activeWorkspaceId,
 	}));
 	const simpleMode = useStoreSnapshot(settingsStore, () => settingsStore.settings?.simpleMode?.enabled === true);
+	const isStudent = useStoreSnapshot(settingsStore, () => settingsStore.settings?.userRole === "student");
 	const [togglingMode, setTogglingMode] = useState(false);
 
 	// Toggle Simple/Normal mode from the top-left logo (flip animation).
 	const toggleMode = useCallback(() => {
-		if (togglingMode) return;
+		if (togglingMode || isStudent) return; // diák nem válthat módot
 		const next = !(settingsStore.settings?.simpleMode?.enabled === true);
 		setTogglingMode(true);
 		void settingsStore.saveSimpleMode(next).finally(() => setTogglingMode(false));
-	}, [togglingMode]);
+	}, [togglingMode, isStudent]);
 
 	const orderedChannels = CHANNEL_FILTER_ORDER.filter((ch) => state.availableChannels.includes(ch as SessionChannel));
 	const workspaceFiltering = Boolean(state.searchQuery || state.channelFilter);
@@ -819,6 +820,7 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 				{/* Header: brand + collapse */}
 				<div className="flex items-center justify-between gap-2 border-b border-[var(--inno-border)] px-3 py-2.5">
 					<div className="flex min-w-0 items-center gap-2">
+						{!isStudent && (
 						<button
 							type="button"
 							onClick={toggleMode}
@@ -844,6 +846,7 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 								</span>
 							</motion.div>
 						</button>
+						)}
 						<h1 className="inno-sidebar-title truncate font-semibold tracking-tight text-[var(--inno-text)]">
 							Inno Agent
 						</h1>
