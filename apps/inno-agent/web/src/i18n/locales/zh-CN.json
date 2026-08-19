@@ -523,6 +523,14 @@
 			"qrConfirmed": "绑定成功",
 			"qrWaiting": "等待扫描…",
 			"qrRegenerate": "重新生成"
+		},
+		"shutdown": {
+			"title": "关闭应用",
+			"desc": "停止 Inno Agent 服务。已保存的数据和工作区会保留；下次启动时从上次的位置继续。",
+			"button": "关闭",
+			"confirm": "确定要关闭 Inno Agent 吗？",
+			"stopping": "正在关闭…",
+			"failed": "关闭失败。"
 		}
 	},
 	"chat": {

@@ -523,6 +523,14 @@
 			"qrConfirmed": "A kötés sikeres",
 			"qrWaiting": "Várakozás a beolvasásra...",
 			"qrRegenerate": "Regenerátum"
+		},
+		"shutdown": {
+			"title": "Alkalmazás leállítása",
+			"desc": "Leállítja az Inno Agent szerverét. A mentett adatok és munkaterületek megmaradnak; a következő indításkor minden ott folytatódik, ahol abbahagytad.",
+			"button": "Leállítás",
+			"confirm": "Biztosan leállítod az Inno Agentet?",
+			"stopping": "Leállítás…",
+			"failed": "A leállítás nem sikerült."
 		}
 	},
 	"chat": {

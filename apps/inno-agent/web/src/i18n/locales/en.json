@@ -523,6 +523,14 @@
 			"qrConfirmed": "Binding successful",
 			"qrWaiting": "Waiting for scan...",
 			"qrRegenerate": "Regenerate"
+		},
+		"shutdown": {
+			"title": "Shut down the app",
+			"desc": "Stops the Inno Agent server. Saved data and workspaces are kept; the next launch continues where you left off.",
+			"button": "Shut down",
+			"confirm": "Are you sure you want to shut down Inno Agent?",
+			"stopping": "Shutting down…",
+			"failed": "Shutdown failed."
 		}
 	},
 	"chat": {

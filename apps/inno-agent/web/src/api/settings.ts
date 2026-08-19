@@ -111,6 +111,13 @@ export async function saveThemeSettings(theme: string): Promise<InnoSettings> {
 	});
 }
 
+/** Ask the backend to shut down gracefully (stops the whole app/server). */
+export async function shutdownServer(): Promise<void> {
+	await apiFetch<{ status: string }>("/api/shutdown", {
+		method: "POST",
+	});
+}
+
 export async function feishuQrRegister(): Promise<{ deviceCode: string; qrUrl: string; expiresIn: number; interval: number }> {
 	return apiFetch<{ deviceCode: string; qrUrl: string; expiresIn: number; interval: number }>("/api/channels/feishu/qr-register", {
 		method: "POST",

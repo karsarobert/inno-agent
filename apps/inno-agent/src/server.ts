@@ -2258,6 +2258,20 @@ const server = createServer(async (req, res) => {
 			return;
 		}
 
+		// --- Graceful shutdown (no bootstrap needed) ---
+		// Replies first so the web UI can show the result, then closes the
+		// HTTP server and exits the process a moment later.
+		if (method === "POST" && url === "/api/shutdown") {
+			json(res, 200, { status: "stopping" });
+			setTimeout(() => {
+				logger.info("shutdown requested via /api/shutdown");
+				server.close(() => process.exit(0));
+				// Force-exit if connections keep the server open.
+				setTimeout(() => process.exit(0), 1500).unref();
+			}, 100);
+			return;
+		}
+
 		// --- Lazy bootstrap on first API request ---
 		// All /api/* endpoints need the agent session and data stores.
 		// Static files and SPA fallback skip this so no directories are
