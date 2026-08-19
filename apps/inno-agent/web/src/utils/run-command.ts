@@ -4,7 +4,7 @@ function quoteForShell(path: string): string {
 
 function cppExecutablePath(relPath: string): string {
 	const stem = relPath
-		.replace(/\.(?:cpp|cc|cxx)$/i, "")
+		.replace(/\.(?:cpp|cc|cxx|c)$/i, "")
 		.replace(/[^a-zA-Z0-9_-]+/g, "-")
 		.replace(/^-+|-+$/g, "") || "program";
 	return `.inno-cpp-${stem}`;
@@ -18,6 +18,11 @@ export function defaultRunCommand(relPath: string): string | null {
 	if (lower.endsWith(".js") || lower.endsWith(".mjs") || lower.endsWith(".cjs")) return `node ${quoted}`;
 	if (lower.endsWith(".ts") || lower.endsWith(".tsx")) return `npx tsx ${quoted}`;
 	if (lower.endsWith(".sh") || lower.endsWith(".bash") || lower.endsWith(".zsh")) return `bash ${quoted}`;
+	if (lower.endsWith(".c")) {
+		const executable = cppExecutablePath(relPath);
+		const quotedExecutable = quoteForShell(executable);
+		return `gcc -std=c17 -Wall -Wextra -Wpedantic ${quoted} -o ${quotedExecutable} && ./${quotedExecutable}`;
+	}
 	if (lower.endsWith(".cpp") || lower.endsWith(".cc") || lower.endsWith(".cxx")) {
 		const executable = cppExecutablePath(relPath);
 		const quotedExecutable = quoteForShell(executable);
