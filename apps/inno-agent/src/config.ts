@@ -347,7 +347,10 @@ export function loadConfig(configPathOrDir: string): InnoConfig {
 		: join(configPathOrDir, "config.json");
 	try {
 		const raw = readFileSync(configPath, "utf-8");
-		return normalizeConfig(JSON.parse(raw) as LegacyInnoConfig);
+		// Tolerate a UTF-8 BOM (PowerShell 5.1 Set-Content -Encoding UTF8
+		// writes one; JSON.parse would reject it as an invalid token).
+		const text = raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw;
+		return normalizeConfig(JSON.parse(text) as LegacyInnoConfig);
 	} catch (error) {
 		throw new Error(
 			`Failed to load Inno config from ${configPath}: ${error instanceof Error ? error.message : String(error)}`,
