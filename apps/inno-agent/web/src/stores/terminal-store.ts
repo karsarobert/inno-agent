@@ -16,7 +16,7 @@ export type TerminalStatus =
 	| "disconnected"
 	| "error";
 
-class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
+export class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 	terminalId: string | null = null;
 	innoSessionId: string | null = null;
 	workspaceId: string | null = null;
@@ -28,6 +28,11 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 	lastCommand: string | null = null;
 
 	private ws: WebSocket | null = null;
+	private pendingRun: {
+		event: Extract<ClientTerminalEvent, { type: "run" }>;
+		target?: { sessionId: string; workspaceId?: string };
+	} | null = null;
+	private connectionGeneration = 0;
 
 	setOpen(open: boolean): void {
 		if (this.isOpen === open) return;
@@ -38,7 +43,11 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 	async connect(innoSessionId: string, workspaceId?: string, cols = 100, rows = 24): Promise<void> {
 		// If already connected to same session, no-op.
 		if (this.innoSessionId === innoSessionId && this.status === "connected" && this.ws) return;
-		await this.disconnect();
+		const generation = ++this.connectionGeneration;
+		// A Run gomb a drawer/TerminalView mountja előtt hívhatja a store-t. A
+		// connect kezdeti takarítása ezért nem dobhatja el a queued parancsot.
+		await this.cleanupConnection(true);
+		if (generation !== this.connectionGeneration) return;
 
 		this.innoSessionId = innoSessionId;
 		this.status = "connecting";
@@ -47,10 +56,15 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 
 		try {
 			const info = await createTerminalSession({ sessionId: innoSessionId, workspaceId, cols, rows });
+			if (generation !== this.connectionGeneration) {
+				try { await closeTerminalSession(info.id); } catch { /* stale session cleanup */ }
+				return;
+			}
 			this.terminalId = info.id;
 			this.workspaceId = info.workspaceId;
 			this.cwd = info.cwd;
 		} catch (err) {
+			if (generation !== this.connectionGeneration) return;
 			this.status = "error";
 			this.error = err instanceof Error ? err.message : "Failed to create terminal";
 			this.emit("change", undefined);
@@ -63,7 +77,7 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 		// flip to error so the UI stops showing 'connecting…' forever. The
 		// most common cause is a dev-mode proxy that isn't forwarding WS.
 		const watchdog = setTimeout(() => {
-			if (this.status === "connecting") {
+			if (generation === this.connectionGeneration && this.ws === ws && this.status === "connecting") {
 				this.status = "error";
 				this.error = "WebSocket connect timed out (check vite proxy `ws: true`?)";
 				this.emit("change", undefined);
@@ -71,6 +85,7 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 			}
 		}, 5000);
 		ws.onmessage = (ev) => {
+			if (generation !== this.connectionGeneration || this.ws !== ws) return;
 			let event: ServerTerminalEvent;
 			try {
 				event = JSON.parse(ev.data) as ServerTerminalEvent;
@@ -81,6 +96,16 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 				case "ready":
 					clearTimeout(watchdog);
 					this.status = "connected";
+					if (this.pendingRun) {
+						const pending = this.pendingRun;
+						const targetMatches = !pending.target || (
+							pending.target.sessionId === innoSessionId &&
+							(pending.target.workspaceId === undefined || pending.target.workspaceId === this.workspaceId)
+						);
+						this.pendingRun = null;
+						if (targetMatches) this.send(pending.event);
+						else this.error = "Queued Run target changed before terminal connected";
+					}
 					this.emit("change", undefined);
 					break;
 				case "output":
@@ -108,12 +133,14 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 		};
 		ws.onclose = () => {
 			clearTimeout(watchdog);
+			if (generation !== this.connectionGeneration || this.ws !== ws) return;
 			if (this.status !== "error") this.status = "disconnected";
 			this.ws = null;
 			this.emit("change", undefined);
 		};
 		ws.onerror = () => {
 			clearTimeout(watchdog);
+			if (generation !== this.connectionGeneration || this.ws !== ws) return;
 			this.status = "error";
 			this.error = "WebSocket error";
 			this.emit("change", undefined);
@@ -133,14 +160,34 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 		this.send({ type: "resize", cols, rows });
 	}
 
-	runCommand(command: string, sourceFile?: string): void {
-		if (!command.trim()) return;
+	runCommand(
+		command: string,
+		sourceFile?: string,
+		target?: { sessionId: string; workspaceId?: string },
+	): boolean {
+		if (!command.trim()) return false;
+		if (this.status === "running" || this.pendingRun) {
+			this.error = "A program már fut vagy indításra vár";
+			this.emit("change", undefined);
+			return false;
+		}
+		this.error = "";
 		this.lastCommand = command;
 		this.setOpen(true);
-		this.send({ type: "run", command, sourceFile });
+		const event: Extract<ClientTerminalEvent, { type: "run" }> = { type: "run", command, sourceFile };
+		const targetMatches = !target || (
+			target.sessionId === this.innoSessionId &&
+			(target.workspaceId === undefined || target.workspaceId === this.workspaceId)
+		);
+		if (this.ws?.readyState === WebSocket.OPEN && this.status === "connected" && targetMatches) {
+			this.send(event);
+		} else {
+			this.pendingRun = { event, target };
+		}
+		return true;
 	}
 
-	async disconnect(): Promise<void> {
+	private async cleanupConnection(preservePendingRun: boolean): Promise<void> {
 		const id = this.terminalId;
 		const ws = this.ws;
 		this.ws = null;
@@ -149,6 +196,7 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 		this.workspaceId = null;
 		this.cwd = null;
 		this.activeRunId = null;
+		if (!preservePendingRun) this.pendingRun = null;
 		this.status = "idle";
 		this.emit("change", undefined);
 		if (ws) {
@@ -157,6 +205,11 @@ class TerminalStoreImpl extends EventEmitter<TerminalStoreEvents> {
 		if (id) {
 			try { await closeTerminalSession(id); } catch { /* server may be gone */ }
 		}
+	}
+
+	async disconnect(preservePendingRun = false): Promise<void> {
+		this.connectionGeneration++;
+		await this.cleanupConnection(preservePendingRun);
 	}
 }
 

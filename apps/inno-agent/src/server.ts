@@ -87,6 +87,7 @@ applyRuntimeEnvironment(paths);
 const port = parsed.options.port
 	?? (process.env.INNO_PORT ? Number.parseInt(process.env.INNO_PORT, 10) : undefined)
 	?? 3000;
+const host = parsed.options.host ?? process.env.INNO_HOST;
 
 // Config is loaded on first API request, not at startup.
 let config!: InnoConfig;
@@ -232,7 +233,10 @@ async function ensureBootstrapped(): Promise<void> {
 		}
 
 		runRecordStore = new RunRecordStore(join(dataDir, "runs"));
-		terminalManager = new TerminalSessionManager(workspaceRegistry, runRecordStore);
+		terminalManager = new TerminalSessionManager(workspaceRegistry, runRecordStore, {
+			sandbox: parsed.options.sandbox === true,
+			userRole: config.userRole,
+		});
 
 		// Resolve agent cwd per session based on its workspace binding.
 		setWorkspaceCwdResolver((sessionPath: string) => {
@@ -4865,7 +4869,7 @@ function bindTerminalWs(ws: WebSocket, terminalId: string): void {
 // All other endpoints call ensureBootstrapped() lazily on first request.
 // ---------------------------------------------------------------------------
 
-server.listen(port, () => {
-	console.log(`[inno-server] listening on http://localhost:${port}`);
+server.listen(port, host, () => {
+	console.log(`[inno-server] listening on http://${host ?? "localhost"}:${port}`);
 	console.log(`[inno-server] config: ${paths.configPath}`);
 });

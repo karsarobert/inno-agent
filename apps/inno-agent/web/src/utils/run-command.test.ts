@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { defaultRunCommand } from "./run-command.js";
+import { defaultRunCommand, shouldShowRunButton, shouldShowTerminalDrawer } from "./run-command.js";
 
 describe("defaultRunCommand", () => {
 	it("builds and runs C++ sources with C++20 and warnings enabled", () => {
@@ -34,5 +34,19 @@ describe("defaultRunCommand", () => {
 
 	it("keeps unsupported files non-runnable", () => {
 		expect(defaultRunCommand("kurzus-terv.md")).toBeNull();
+	});
+});
+
+describe("shouldShowRunButton", () => {
+	it("shows Practice Lab Run for C++ files in Simple Mode", () => {
+		expect(shouldShowRunButton("starter/src/main.cpp", true)).toBe(true);
+	});
+
+	it("keeps unsupported files hidden in Simple Mode", () => {
+		expect(shouldShowRunButton("kurzus-terv.md", true)).toBe(false);
+	});
+
+	it("keeps the Practice Lab terminal available in Simple Mode", () => {
+		expect(shouldShowTerminalDrawer(true)).toBe(true);
 	});
 });

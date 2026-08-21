@@ -30,6 +30,7 @@ import { RunButton } from "./terminal/RunButton.js";
 import type { WorkspaceFileDetail, WorkspaceFileKind, WorkspaceOfficeFormat } from "../types/workspace.js";
 import { type ArboristNode, toArboristNodes } from "../types/workspace.js";
 import { normalizeMarkdownMath } from "../utils/markdown-math.js";
+import { shouldShowRunButton, shouldShowTerminalDrawer } from "../utils/run-command.js";
 import { useStoreSnapshot } from "./hooks.js";
 import "@earendil-works/pi-web-ui";
 import "@uiw/react-md-editor/markdown-editor.css";
@@ -645,7 +646,7 @@ function FileContentPane({ onToggleSidebar, sidebarOpen }: { onToggleSidebar: ()
 					</div>
 				</div>
 				<div className="flex items-center gap-2">
-					{state.file && !simpleMode ? <RunButton filePath={state.file.path} /> : null}
+					{shouldShowRunButton(state.file?.path, simpleMode) ? <RunButton filePath={state.file!.path} /> : null}
 					{canEdit && (
 						<button
 							className="flex h-7 items-center gap-1 rounded-md border border-[var(--inno-border)] px-2.5 text-xs text-[var(--inno-text-muted)] hover:bg-[var(--inno-surface-muted)] hover:text-[var(--inno-text)]"
@@ -1084,7 +1085,7 @@ export function WorkspaceBrowser() {
 					<div className="flex min-h-0 flex-1 flex-col">
 						<FileContentPane onToggleSidebar={() => setSidebarOpen((v) => !v)} sidebarOpen={sidebarOpen} />
 					</div>
-					{!simpleMode && <TerminalDrawer />}
+					{shouldShowTerminalDrawer(simpleMode) ? <TerminalDrawer /> : null}
 				</section>
 			) : null}
 

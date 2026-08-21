@@ -50,6 +50,8 @@ export interface PtySpawnOptions {
 	rows: number;
 	shell?: string;
 	env?: NodeJS.ProcessEnv;
+	/** Linux bubblewrap isolation for learner Practice Lab terminals. */
+	sandbox?: boolean;
 }
 
 export interface PtySession {
@@ -96,6 +98,70 @@ function sanitizeEnv(base: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
 	return out;
 }
 
+interface PtyLaunchInput {
+	shell: string;
+	cwd: string;
+	sandbox: boolean;
+}
+
+interface PtyLaunchDeps {
+	platform?: NodeJS.Platform;
+	exists?: (path: string) => boolean;
+}
+
+export interface PtyLaunch {
+	file: string;
+	args: string[];
+	cwd: string;
+}
+
+/** Build a fail-closed learner-terminal launch plan. */
+export function resolvePtyLaunch(input: PtyLaunchInput, deps: PtyLaunchDeps = {}): PtyLaunch {
+	if (!input.sandbox) return { file: input.shell, args: [], cwd: input.cwd };
+	const platform = deps.platform ?? process.platform;
+	const exists = deps.exists ?? existsSync;
+	if (platform !== "linux") {
+		throw new Error("Practice Lab sandbox is currently supported only on Linux");
+	}
+	const bwrap = "/usr/bin/bwrap";
+	if (!exists(bwrap)) {
+		throw new Error("Practice Lab sandbox requires /usr/bin/bwrap");
+	}
+	const sandboxShell = "/bin/bash";
+	if (!exists(sandboxShell)) {
+		throw new Error("Practice Lab sandbox requires /bin/bash");
+	}
+
+	const args = [
+		"--die-with-parent",
+		"--new-session",
+		"--unshare-user",
+		"--unshare-pid",
+		"--unshare-ipc",
+		"--unshare-uts",
+		"--unshare-net",
+		"--unshare-cgroup-try",
+		"--proc", "/proc",
+		"--dev", "/dev",
+		"--tmpfs", "/tmp",
+	];
+	for (const path of ["/usr", "/bin", "/sbin", "/lib", "/lib64", "/etc"]) {
+		if (exists(path)) args.push("--ro-bind", path, path);
+	}
+	args.push(
+		"--bind", input.cwd, "/workspace",
+		"--chdir", "/workspace",
+		"--clearenv",
+		"--setenv", "HOME", "/workspace",
+		"--setenv", "INNO_WORKSPACE", "/workspace",
+		"--setenv", "PATH", "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+		"--setenv", "TERM", "xterm-256color",
+		"--setenv", "LANG", "C.UTF-8",
+		sandboxShell, "--noprofile", "--norc",
+	);
+	return { file: bwrap, args, cwd: input.cwd };
+}
+
 let _seq = 0;
 
 export class LocalPtyBackend {
@@ -108,11 +174,12 @@ export class LocalPtyBackend {
 		// Use os.homedir() — process.env.HOME is unset on Windows (Windows uses
 		// USERPROFILE).
 		const cwd = existsSync(opts.cwd) ? opts.cwd : (homedir() || process.cwd());
-		const pty = spawn(shell, [], {
+		const launch = resolvePtyLaunch({ shell, cwd, sandbox: opts.sandbox === true });
+		const pty = spawn(launch.file, launch.args, {
 			name: "xterm-256color",
 			cols: opts.cols,
 			rows: opts.rows,
-			cwd,
+			cwd: launch.cwd,
 			env: env as { [key: string]: string },
 		});
 		const id = `pty_${Date.now().toString(36)}_${(_seq++).toString(36)}`;

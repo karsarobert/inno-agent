@@ -67,6 +67,18 @@ function trailingSentinelStart(value: string, tag: string): number {
  * Re-creating for the same inno session kills the previous pty so we don't
  * leak shells when the web UI reconnects.
  */
+export interface TerminalManagerOptions {
+	sandbox?: boolean;
+	userRole?: string;
+}
+
+/** Server-side authorization boundary; UI mode alone is never trusted. */
+export function assertTerminalPolicy(options: TerminalManagerOptions): void {
+	if (options.userRole === "student" && options.sandbox !== true) {
+		throw new Error("Student Practice Lab requires sandbox mode");
+	}
+}
+
 export class TerminalSessionManager {
 	private byInnoSession = new Map<string, TerminalSession>();
 	private byTerminalId = new Map<string, TerminalSession>();
@@ -74,9 +86,11 @@ export class TerminalSessionManager {
 	constructor(
 		private readonly registry: WorkspaceRegistry,
 		private readonly runs: RunRecordStore,
+		private readonly options: TerminalManagerOptions = {},
 	) {}
 
 	create(input: TerminalCreateInput): TerminalSession {
+		assertTerminalPolicy(this.options);
 		const cwd = this.registry.resolveWorkspaceDir(input.workspaceId);
 		if (!cwd) throw new Error(`Workspace not found: ${input.workspaceId}`);
 
@@ -88,6 +102,7 @@ export class TerminalSessionManager {
 			cwd,
 			cols: input.cols ?? 100,
 			rows: input.rows ?? 24,
+			sandbox: this.options.sandbox === true,
 			env: {
 				...process.env,
 				INNO_WORKSPACE: cwd,

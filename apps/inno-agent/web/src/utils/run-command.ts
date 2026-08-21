@@ -30,3 +30,16 @@ export function defaultRunCommand(relPath: string): string | null {
 	}
 	return null;
 }
+
+/**
+ * A Run kontroll láthatósága kizárólag a fájl futtathatóságától függ.
+ * A Simple Mode a tanulói felület, ezért nem rejtheti el a Practice Labot.
+ */
+export function shouldShowRunButton(filePath: string | null | undefined, _simpleMode: boolean): boolean {
+	return Boolean(filePath && defaultRunCommand(filePath));
+}
+
+/** Practice Lab is a learner feature, so Simple Mode must not hide its drawer. */
+export function shouldShowTerminalDrawer(_simpleMode: boolean): boolean {
+	return true;
+}

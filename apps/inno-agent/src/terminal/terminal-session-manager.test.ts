@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { TerminalSessionManager, type TerminalSession } from "./terminal-session-manager.js";
+import { assertTerminalPolicy, TerminalSessionManager, type TerminalSession } from "./terminal-session-manager.js";
 
 function activeSession(tag = "__INNO_RUN_DONE_run_test123"): TerminalSession {
 	return {
@@ -15,6 +15,17 @@ function activeSession(tag = "__INNO_RUN_DONE_run_test123"): TerminalSession {
 		sentinelDone: false,
 	};
 }
+
+describe("terminal server policy", () => {
+	it("rejects student terminals when the server was not started with sandbox", () => {
+		expect(() => assertTerminalPolicy({ userRole: "student", sandbox: false })).toThrow(/sandbox/i);
+	});
+
+	it("allows student terminals only with sandbox and keeps teacher direct mode compatible", () => {
+		expect(() => assertTerminalPolicy({ userRole: "student", sandbox: true })).not.toThrow();
+		expect(() => assertTerminalPolicy({ userRole: "teacher", sandbox: false })).not.toThrow();
+	});
+});
 
 describe("TerminalSessionManager.processOutput", () => {
 	const manager = new TerminalSessionManager({} as never, {} as never);
