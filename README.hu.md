@@ -169,7 +169,7 @@ Mind a CLI, mind a szerver az `apps/inno-agent/src/runtime.ts` segítségével o
 
 ### Content Hub (készségtár + munkaterületi előbeállítások)
 
-A globális **készségtárat** és az Egyszerű mód **munkaterületi előbeállításait** (egy `agent.md` + `.skills/` csomagot, amely egykattintásos kártyaként jelenik meg az üdvözlőképernyőn) egy távoli **content hub** szolgálja ki. Alapértelmezésben ez a nyilvános [`Chloris-Blaxk/inno-agent-hub`](https://github.com/Chloris-Blaxk/inno-agent-hub) GitHub-tárház; helyette beállíthat privát GitHub-tárház vagy saját üzemeltetésű csomagszolgáltatás is — csak konfigurációs módosítás szükséges, kódmódosítás nem.
+A globális **készségtárat** és az Egyszerű mód **munkaterületi előbeállításait** (egy `agent.md` + `.skills/` csomagot, amely egykattintásos kártyaként jelenik meg az üdvözlőképernyőn) egy távoli **content hub** szolgálja ki. Alapértelmezésben ez a [`karsarobert/inno-agent-hub`](https://github.com/karsarobert/inno-agent-hub) GitHub-tárház; helyette beállíthat privát GitHub-tárház vagy saját üzemeltetésű csomagszolgáltatás is — csak konfigurációs módosítás szükséges, kódmódosítás nem.
 
 Konfigurálja a `runtime/config/config.json` fájlban (vagy a felületen: **Beállítások → Content Hub**):
 
@@ -178,7 +178,7 @@ Konfigurálja a `runtime/config/config.json` fájlban (vagy a felületen: **Beá
 {
   "contentHub": {
     "type": "github",
-    "owner": "Chloris-Blaxk",
+    "owner": "karsarobert",
     "repo": "inno-agent-hub",
     "ref": "main",
     "skillsPath": "skill-library",        // dir holding <skill>/SKILL.md

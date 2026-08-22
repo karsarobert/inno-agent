@@ -138,7 +138,7 @@ CLI 与 server 都通过 `apps/inno-agent/src/runtime.ts` 解析路径。优先�
 
 ### 内容中心(Content Hub)
 
-技能库与简单模式预设均从远程**内容中心**拉取——默认是公开 GitHub 仓库 [`Chloris-Blaxk/inno-agent-hub`](https://github.com/Chloris-Blaxk/inno-agent-hub)。在 `config.json` 的 `contentHub`(或 **设置 → 内容中心**)中可切换为私有 GitHub 仓库(`"type": "github"`)或自建 bundle 服务(`"type": "bundle"`)——零依赖的 bundle 服务器见 [`scripts/content-hub-server/`](./scripts/content-hub-server/)。预设下载后本地缓存,应用内置模板作为离线兜底。
+技能库与简单模式预设均从远程**内容中心**拉取——默认是 GitHub 仓库 [`karsarobert/inno-agent-hub`](https://github.com/karsarobert/inno-agent-hub)。在 `config.json` 的 `contentHub`(或 **设置 → 内容中心**)中可切换为私有 GitHub 仓库(`"type": "github"`)或自建 bundle 服务(`"type": "bundle"`)——零依赖的 bundle 服务器见 [`scripts/content-hub-server/`](./scripts/content-hub-server/)。预设下载后本地缓存,应用内置模板作为离线兜底。
 
 ## 架构
 

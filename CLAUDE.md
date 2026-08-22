@@ -388,7 +388,7 @@ Full config.json structure (see `config.example.json`):
   "subagents": { "enabled": false },
   "contentHub": {
     "type": "github",
-    "owner": "Chloris-Blaxk",
+    "owner": "karsarobert",
     "repo": "inno-agent-hub",
     "ref": "main",
     "skillsPath": "skill-library",
@@ -411,7 +411,7 @@ Full config.json structure (see `config.example.json`):
 
 Note: `simpleMode` and `ui.theme` are not in `config.example.json` but are added at runtime by `normalizeConfig` defaults (`simpleMode.enabled: false`, `ui.theme: "light"`). QQ channel is supported in code via bridge but is not in the template config.
 
-- `contentHub` configures the remote source for skills and presets. `type` is `"github"` or `"bundle"`. For `"bundle"`, set `baseUrl` to the self-hosted server URL. `token` is the GitHub PAT (for `"github"` type) or bundle auth token.
+- `contentHub` configures the remote source for skills and presets. `type` is `"github"`, `"bundle"` or `"none"`. For `"bundle"`, set `baseUrl` to the self-hosted server URL. `token` is the GitHub PAT (for `"github"` type) or bundle auth token.
 - `memory.l1Enabled` / `l2Enabled` / `l3Enabled` individually gate each memory layer. Simple Mode force-disables all three without overwriting these preferences.
 - `simpleMode.enabled` toggles Simple Mode (hides advanced features, surfaces preset workspaces).
 - `ui.theme` persists the UI theme preference.
