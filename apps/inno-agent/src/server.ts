@@ -18,7 +18,6 @@ import { applyProviderProxyBypass } from "./utils/proxy-bypass.js";
 import { ensureDir, readJson, readText, writeJson, writeText } from "./storage/file-store.js";
 import { collectBackupFiles, applyBackupFiles, BACKUP_FORMAT_VERSION, type BackupManifest } from "./backup/state-backup.js";
 import { readZip, writeZip } from "./backup/zip.js";
-import { PteService, PteError } from "./pte/pte-service.js";
 import {
 	createNewSession,
 	getCurrentSessionId,
@@ -121,11 +120,6 @@ let bootstrapped = false;
 let bootstrapPromise: Promise<void> | null = null;
 let bridgeToken: string | undefined;
 
-// PTE helyi kliens + szerver-szinkron: a config-ot a /pte/* útvonalak is
-// betöltik (a teljes bootstrap nélkül), hogy a belépés működjön bootstrap előtt.
-let configLoaded = false;
-let pteService: PteService | null = null;
-
 function piEventToSseEvent(event: any): unknown | null {
 	switch (event.type) {
 		case "message_update": {
@@ -202,38 +196,6 @@ function piEventToChannelStreamEvent(event: any): ChannelStreamEvent | null {
 }
 
 /**
- * Config betöltése egyszer (a /pte/* útvonalak a teljes bootstrap nélkül is
- * használják, hogy a belépés a bootstrap előtt működjön).
- */
-async function ensureConfigLoaded(): Promise<void> {
-	if (configLoaded) return;
-	config = loadConfig(paths.configPath);
-	applyProviderProxyBypass(config);
-	configLoaded = true;
-}
-
-/** PTE módban a sync-szolgáltatás létrehozása + session-visszatöltés. */
-async function ensurePteService(): Promise<void> {
-	await ensureConfigLoaded();
-	if (pteService) return;
-	const pteCfg = config.pte;
-	if (!pteCfg?.serverUrl) return;
-	pteService = new PteService({
-		paths,
-		serverUrl: pteCfg.serverUrl,
-		syncIntervalMs: pteCfg.syncIntervalMs,
-		setApiKey: (token: string) => {
-			// A live config providers.pte.apiKey-jét mutáljuk — a session-runtime
-			// minden új sessionnél a configHolder.current-ből olvassa.
-			const provider = config.providers?.pte;
-			if (provider) provider.apiKey = token;
-		},
-	});
-	await pteService.init();
-	logger.info(`[pte] service enabled (server: ${pteCfg.serverUrl})`);
-}
-
-/**
  * One-shot lazy bootstrap. Idempotent — concurrent requests while the first
  * bootstrap is still in-flight all await the same promise.
  */
@@ -245,7 +207,8 @@ async function ensureBootstrapped(): Promise<void> {
 		logger.info("[inno-server] first meaningful request — bootstrapping...");
 
 		// ---- config (loaded lazily, not at process start) ----
-		await ensureConfigLoaded();
+		config = loadConfig(paths.configPath);
+		applyProviderProxyBypass(config);
 
 		// ---- data directories ----
 		ensureDir(paths.learnerDataDir);
@@ -391,10 +354,6 @@ async function ensureBootstrapped(): Promise<void> {
 
 		logger.info({ channels: channelRegistry.all().map((c) => c.name).join(", ") || "none" }, "[inno-server] channels");
 		logger.info({ jobCount: jobStore.list().length }, "[inno-server] jobs loaded");
-
-		// PTE módban a szinkron-timer akkor is elindul, ha a UI sosem hívná a
-		// /pte/status-t (pl. közvetlen API-használat).
-		await ensurePteService();
 
 		bootstrapped = true;
 		logger.info("[inno-server] bootstrap complete");
@@ -2446,61 +2405,6 @@ const server = createServer(async (req, res) => {
 			} catch (err) {
 				json(res, 400, { error: `A visszaállítás nem sikerült: ${err instanceof Error ? err.message : String(err)}` });
 			}
-			return;
-		}
-
-		// --- PTE: helyi kliens + szerver-szinkron ---
-		// A belépésnek a bootstrap ELŐTT kell működnie (a csomag letöltése a
-		// friss home-ba történik, mielőtt az app bármit inicializálna).
-		if (url.startsWith("/pte/")) {
-			await ensurePteService();
-			if (!pteService) {
-				json(res, 404, { error: "pte_disabled" });
-				return;
-			}
-			try {
-				if (method === "GET" && url === "/pte/status") {
-					json(res, 200, pteService.status());
-					return;
-				}
-				if (method === "POST" && (url === "/pte/login" || url === "/pte/register")) {
-					const body = JSON.parse((await readRawBody(req, 1024 * 1024)).toString("utf-8"));
-					const user =
-						url === "/pte/login"
-							? await pteService.login(String(body.email ?? ""), String(body.password ?? ""))
-							: await pteService.register(
-									String(body.name ?? ""),
-									String(body.email ?? ""),
-									String(body.password ?? ""),
-									String(body.inviteCode ?? ""),
-								);
-					json(res, 200, { ok: true, user });
-					return;
-				}
-				if (method === "POST" && url === "/pte/sync") {
-					const result = await pteService.syncNow();
-					json(res, 200, { ok: true, ...result });
-					return;
-				}
-				if (method === "POST" && url === "/pte/logout") {
-					await pteService.logout();
-					json(res, 200, { ok: true });
-					return;
-				}
-			} catch (err) {
-				if (err instanceof PteError) {
-					json(res, err.status, { error: err.code });
-					return;
-				}
-				if (err instanceof SyntaxError) {
-					json(res, 400, { error: "invalid_json" });
-					return;
-				}
-				logger.warn({ err }, "[pte] request failed");
-				json(res, 400, { error: "internal_error" });
-				return;
-			}
-			json(res, 404, { error: "not_found" });
 			return;
 		}
 
@@ -5096,18 +5000,3 @@ server.listen(port, host, () => {
 	console.log(`[inno-server] listening on http://${host ?? "localhost"}:${port}`);
 	console.log(`[inno-server] config: ${paths.configPath}`);
 });
-
-// PTE módban a leállítás előtt utolsó szinkron (best-effort), hogy a legfrissebb
-// munka mindig a szerveren legyen. A /api/shutdown a meglévő graceful útvonal.
-let pteShutdownFlush: Promise<void> | null = null;
-function flushPteAndExit(signal: string): void {
-	if (pteShutdownFlush) return;
-	pteShutdownFlush = (pteService?.flushSync() ?? Promise.resolve()).finally(() => {
-		logger.info(`[inno-server] ${signal} — pte flush done, exiting`);
-		process.exit(0);
-	});
-	// Ha a flush 10 mp-nél tovább tartana, erőszakkal lépünk ki.
-	setTimeout(() => process.exit(0), 10_000).unref();
-}
-process.on("SIGTERM", () => flushPteAndExit("SIGTERM"));
-process.on("SIGINT", () => flushPteAndExit("SIGINT"));
