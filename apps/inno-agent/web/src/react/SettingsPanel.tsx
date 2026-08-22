@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { Trash2, Pencil, X, ChevronDown, ChevronRight, Plus, QrCode as QrCodeIcon, CheckCircle, Wifi, WifiOff, Database, KeyRound, Globe, Power } from "lucide-react";
+import { Trash2, Pencil, X, ChevronDown, ChevronRight, Plus, QrCode as QrCodeIcon, CheckCircle, Wifi, WifiOff, Database, KeyRound, Globe, Power, Loader2, HardDriveDownload } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { getWikiStats } from "../api/wiki.js";
 import { settingsStore } from "../stores/settings-store.js";
 import { themeStore, THEME_IDS, THEME_PREVIEW_COLORS, type ThemeId } from "../stores/theme-store.js";
 import { feishuQrRegister, feishuQrStatus, wechatQrLogin, wechatQrStatus, wechatStatus, shutdownServer } from "../api/settings.js";
+import { BackupPanel } from "./BackupPanel.js";
 import type { InnoModelInfo, InnoProviderModel as ProviderModel, InnoSettings, ChannelsSettingsPayload, PersonalBridgeChannelConfig } from "../types/settings.js";
 import type { WikiStats } from "../types/wiki.js";
 import { useStoreSnapshot } from "./hooks.js";
@@ -785,20 +786,37 @@ function ChannelsSettings({ settings }: { settings: InnoSettings }) {
 function ShutdownSettings() {
 	const { t } = useTranslation();
 	const [stopping, setStopping] = useState(false);
+	const [saving, setSaving] = useState(false);
 
-	const handleShutdown = useCallback(() => {
-		if (!window.confirm(t("settings.shutdown.confirm", "Biztosan leállítod az Inno Agentet?"))) return;
+	const handleShutdown = useCallback((saveBeforeExit = false) => {
+		const confirmText = saveBeforeExit
+			? t(
+					"settings.shutdown.confirmSave",
+					"A „Mentés és leállítás” előbb elmenti a teljes állapotot (beszélgetések, memória, munkaterületek) a szerver exports mappájába, majd leállítja az alkalmazást. Folytatod?",
+				)
+			: t("settings.shutdown.confirm", "Biztosan leállítod az Inno Agentet?");
+		if (!window.confirm(confirmText)) return;
 		setStopping(true);
-		void shutdownServer()
-			.then(() => {
+		if (saveBeforeExit) setSaving(true);
+		void shutdownServer({ saveBeforeExit })
+			.then((result) => {
 				// The server is going down; nothing more to do. The UI will
 				// lose its connection and the page can be closed.
 				setStopping(false);
+				if (saveBeforeExit) {
+					const name = result.savedBackup ? result.savedBackup.split(/[\\/]/).pop() : "";
+					window.alert(
+						name
+							? t("settings.shutdown.savedNote", "A mentés elkészült ({{name}}). Az alkalmazás leáll.", { name })
+							: t("settings.shutdown.saveFailed", "A mentés nem sikerült, de az alkalmazás leáll."),
+					);
+				}
 			})
 			.catch(() => {
 				setStopping(false);
 				window.alert(t("settings.shutdown.failed", "A leállítás nem sikerült."));
-			});
+			})
+			.finally(() => setSaving(false));
 	}, [t]);
 
 	return (
@@ -807,14 +825,24 @@ function ShutdownSettings() {
 			<p className="mb-3 text-xs leading-relaxed text-[var(--inno-text-muted)]">
 				{t("settings.shutdown.desc", "Leállítja az Inno Agent szerverét. A mentett adatok és munkaterületek megmaradnak; a következő indításkor minden ott folytatódik, ahol abbahagytad.")}
 			</p>
-			<button
-				disabled={stopping}
-				onClick={handleShutdown}
-				className="flex h-8 items-center gap-1.5 rounded-md border border-[var(--inno-danger-border)] bg-[var(--inno-danger-bg)] px-3 text-xs font-medium text-[var(--inno-danger)] transition-colors hover:bg-[var(--inno-danger)] hover:text-white disabled:opacity-50"
-			>
-				<Power size={13} />
-				{stopping ? t("settings.shutdown.stopping", "Leállítás…") : t("settings.shutdown.button", "Leállítás")}
-			</button>
+			<div className="flex flex-wrap items-center gap-2">
+				<button
+					disabled={stopping}
+					onClick={() => handleShutdown(true)}
+					className="flex h-8 items-center gap-1.5 rounded-md border border-[var(--inno-border)] bg-[var(--inno-surface)] px-3 text-xs font-medium text-[var(--inno-text)] transition-colors hover:border-[var(--inno-accent)] hover:text-[var(--inno-accent)] disabled:opacity-50"
+				>
+					{saving ? <Loader2 size={13} className="animate-spin" /> : <HardDriveDownload size={13} />}
+					{saving ? t("settings.shutdown.saving", "Mentés…") : t("settings.shutdown.saveAndStop", "Mentés és leállítás")}
+				</button>
+				<button
+					disabled={stopping}
+					onClick={() => handleShutdown(false)}
+					className="flex h-8 items-center gap-1.5 rounded-md border border-[var(--inno-danger-border)] bg-[var(--inno-danger-bg)] px-3 text-xs font-medium text-[var(--inno-danger)] transition-colors hover:bg-[var(--inno-danger)] hover:text-white disabled:opacity-50"
+				>
+					<Power size={13} />
+					{stopping ? t("settings.shutdown.stopping", "Leállítás…") : t("settings.shutdown.button", "Leállítás")}
+				</button>
+			</div>
 		</div>
 	);
 }
@@ -1404,6 +1432,9 @@ export function SettingsPanel() {
 						</div>
 					</div>
 				</div>
+
+				{/* Save & restore the full student state */}
+				<BackupPanel />
 
 				{/* Shutdown the app */}
 				<ShutdownSettings />

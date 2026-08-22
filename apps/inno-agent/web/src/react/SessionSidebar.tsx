@@ -28,6 +28,7 @@ import { sessionsStore } from "../stores/sessions-store.js";
 import { workspacesStore } from "../stores/workspaces-store.js";
 import { workspaceStore } from "../stores/workspace-store.js";
 import { settingsStore } from "../stores/settings-store.js";
+import { BackupPanel } from "./BackupPanel.js";
 import type { WorkspaceMeta } from "../api/workspaces.js";
 import { triggerDownload } from "../api/workspace.js";
 import type { SessionChannel, SessionMeta } from "../api/sessions.js";
@@ -1199,6 +1200,8 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 
 			{/* Footer */}
 			<div className="border-t border-[var(--inno-border)] p-2">
+				{/* Save / restore state — visible for students too (Simple Mode) */}
+				<BackupPanel compact />
 				<button
 					className="inno-sidebar-text inno-new-chat-button flex w-full items-center justify-center gap-2 rounded-lg inno-primary-button px-3 py-1.5 font-medium text-white shadow-sm transition-colors"
 					onClick={newChat}

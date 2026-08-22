@@ -237,6 +237,14 @@ export class StreamRegistry {
 		return state && ACTIVE_STATUSES.has(state.status) ? state : undefined;
 	}
 
+	/** True when any session currently has an active (queued/running) turn. */
+	hasActiveStreams(): boolean {
+		for (const state of this.streamsByTurn.values()) {
+			if (ACTIVE_STATUSES.has(state.status)) return true;
+		}
+		return false;
+	}
+
 	getActiveForWorkspace(workspaceId: string): SessionStreamState | undefined {
 		for (const state of this.streamsByTurn.values()) {
 			if (state.workspaceId === workspaceId && ACTIVE_STATUSES.has(state.status)) return state;

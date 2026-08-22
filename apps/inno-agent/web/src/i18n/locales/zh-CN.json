@@ -530,7 +530,26 @@
 			"button": "关闭",
 			"confirm": "确定要关闭 Inno Agent 吗？",
 			"stopping": "正在关闭…",
-			"failed": "关闭失败。"
+			"failed": "关闭失败。",
+			"confirmSave": "“保存并关闭”会先将全部状态（对话、记忆、工作区）保存到服务器的 exports 文件夹，然后关闭应用。继续吗？",
+			"saveAndStop": "保存并关闭",
+			"saving": "保存中…",
+			"savedNote": "备份已保存（{{name}}）。应用正在关闭。",
+			"saveFailed": "备份失败，但应用正在关闭。"
+		},
+		"backup": {
+			"title": "保存与恢复状态",
+			"desc": "将全部内容（对话、记忆、工作区和设置）保存到一个文件中。文件可以带到另一台电脑（例如U盘），恢复后即可从上次停止的地方继续。恢复会覆盖当前状态；旧数据会移动到安全文件夹。",
+			"export": "保存到文件",
+			"exportShort": "保存",
+			"exportDone": "备份已保存（{{name}}）。",
+			"exportFailed": "备份失败。",
+			"import": "从文件恢复",
+			"importShort": "恢复",
+			"importConfirm": "恢复将覆盖当前状态（对话、记忆、工作区）。当前数据会移动到安全文件夹。继续吗？",
+			"importBusy": "当前有任务正在运行——请等待其完成后再试。",
+			"importDone": "恢复成功（{{count}} 个文件）——页面即将刷新…",
+			"importFailed": "恢复失败。"
 		}
 	},
 	"chat": {

@@ -16,6 +16,9 @@ import { loadConfig, saveConfig, setDefaultModel, upsertProvider, deleteProvider
 import { installFetchLogger } from "./utils/fetch-logger.js";
 import { applyProviderProxyBypass } from "./utils/proxy-bypass.js";
 import { ensureDir, readJson, readText, writeJson, writeText } from "./storage/file-store.js";
+import { collectBackupFiles, applyBackupFiles, BACKUP_FORMAT_VERSION, type BackupManifest } from "./backup/state-backup.js";
+import { readZip, writeZip } from "./backup/zip.js";
+import { PteService, PteError } from "./pte/pte-service.js";
 import {
 	createNewSession,
 	getCurrentSessionId,
@@ -118,6 +121,11 @@ let bootstrapped = false;
 let bootstrapPromise: Promise<void> | null = null;
 let bridgeToken: string | undefined;
 
+// PTE helyi kliens + szerver-szinkron: a config-ot a /pte/* útvonalak is
+// betöltik (a teljes bootstrap nélkül), hogy a belépés működjön bootstrap előtt.
+let configLoaded = false;
+let pteService: PteService | null = null;
+
 function piEventToSseEvent(event: any): unknown | null {
 	switch (event.type) {
 		case "message_update": {
@@ -194,6 +202,38 @@ function piEventToChannelStreamEvent(event: any): ChannelStreamEvent | null {
 }
 
 /**
+ * Config betöltése egyszer (a /pte/* útvonalak a teljes bootstrap nélkül is
+ * használják, hogy a belépés a bootstrap előtt működjön).
+ */
+async function ensureConfigLoaded(): Promise<void> {
+	if (configLoaded) return;
+	config = loadConfig(paths.configPath);
+	applyProviderProxyBypass(config);
+	configLoaded = true;
+}
+
+/** PTE módban a sync-szolgáltatás létrehozása + session-visszatöltés. */
+async function ensurePteService(): Promise<void> {
+	await ensureConfigLoaded();
+	if (pteService) return;
+	const pteCfg = config.pte;
+	if (!pteCfg?.serverUrl) return;
+	pteService = new PteService({
+		paths,
+		serverUrl: pteCfg.serverUrl,
+		syncIntervalMs: pteCfg.syncIntervalMs,
+		setApiKey: (token: string) => {
+			// A live config providers.pte.apiKey-jét mutáljuk — a session-runtime
+			// minden új sessionnél a configHolder.current-ből olvassa.
+			const provider = config.providers?.pte;
+			if (provider) provider.apiKey = token;
+		},
+	});
+	await pteService.init();
+	logger.info(`[pte] service enabled (server: ${pteCfg.serverUrl})`);
+}
+
+/**
  * One-shot lazy bootstrap. Idempotent — concurrent requests while the first
  * bootstrap is still in-flight all await the same promise.
  */
@@ -205,8 +245,7 @@ async function ensureBootstrapped(): Promise<void> {
 		logger.info("[inno-server] first meaningful request — bootstrapping...");
 
 		// ---- config (loaded lazily, not at process start) ----
-		config = loadConfig(paths.configPath);
-		applyProviderProxyBypass(config);
+		await ensureConfigLoaded();
 
 		// ---- data directories ----
 		ensureDir(paths.learnerDataDir);
@@ -353,6 +392,10 @@ async function ensureBootstrapped(): Promise<void> {
 		logger.info({ channels: channelRegistry.all().map((c) => c.name).join(", ") || "none" }, "[inno-server] channels");
 		logger.info({ jobCount: jobStore.list().length }, "[inno-server] jobs loaded");
 
+		// PTE módban a szinkron-timer akkor is elindul, ha a UI sosem hívná a
+		// /pte/status-t (pl. közvetlen API-használat).
+		await ensurePteService();
+
 		bootstrapped = true;
 		logger.info("[inno-server] bootstrap complete");
 	})().catch((err) => {
@@ -422,6 +465,31 @@ function readBody(req: HttpReq): Promise<unknown> {
 			} catch (err) {
 				reject(new Error("Invalid JSON body"));
 			}
+		});
+		req.on("error", reject);
+	});
+}
+
+/** Read a request body as raw bytes (used for archive uploads). */
+function readRawBody(req: HttpReq, maxBytes: number): Promise<Buffer> {
+	return new Promise((resolve, reject) => {
+		const chunks: Buffer[] = [];
+		let size = 0;
+		let tooLarge = false;
+		req.on("data", (chunk: Buffer) => {
+			size += chunk.length;
+			if (size > maxBytes) {
+				tooLarge = true;
+				return;
+			}
+			chunks.push(chunk);
+		});
+		req.on("end", () => {
+			if (tooLarge) {
+				reject(new Error(`Body exceeds ${maxBytes} bytes`));
+				return;
+			}
+			resolve(Buffer.concat(chunks));
 		});
 		req.on("error", reject);
 	});
@@ -2271,13 +2339,168 @@ const server = createServer(async (req, res) => {
 		// Replies first so the web UI can show the result, then closes the
 		// HTTP server and exits the process a moment later.
 		if (method === "POST" && url === "/api/shutdown") {
-			json(res, 200, { status: "stopping" });
+			// "Save & shutdown": with { saveBeforeExit: true } the full state is
+			// written to dataDir/exports/ before exiting — the same archive the
+			// backup download produces — so the student (or a portal hook) can
+			// pick it up later.
+			let savedBackup: string | null = null;
+			const shutdownBody = (await readBody(req).catch(() => ({}))) as { saveBeforeExit?: unknown };
+			if (shutdownBody.saveBeforeExit === true) {
+				try {
+					const result = await collectBackupFiles(paths);
+					const archive = writeZip([
+						{ path: "manifest.json", data: JSON.stringify(result.manifest, null, 2) },
+						...Array.from(result.files, ([path, data]) => ({ path, data })),
+					]);
+					const exportsDir = join(paths.dataDir, "exports");
+					ensureDir(exportsDir);
+					const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+					savedBackup = join(exportsDir, `inno-agent-mentes-${stamp}.zip`);
+					writeFileSync(savedBackup, archive);
+					logger.info({ path: savedBackup, bytes: archive.length }, "[backup] state saved before shutdown");
+				} catch (err) {
+					logger.warn({ err }, "[backup] save-before-shutdown failed — stopping anyway");
+				}
+			}
+			json(res, 200, { status: "stopping", savedBackup });
 			setTimeout(() => {
 				logger.info("shutdown requested via /api/shutdown");
 				server.close(() => process.exit(0));
 				// Force-exit if connections keep the server open.
 				setTimeout(() => process.exit(0), 1500).unref();
 			}, 100);
+			return;
+		}
+
+		// --- State backup: export everything (conversations, memory,
+		// workspaces, settings) to a single ZIP file ---
+		if (method === "GET" && url === "/api/backup/export") {
+			try {
+				const result = await collectBackupFiles(paths);
+				const archive = writeZip([
+					{ path: "manifest.json", data: JSON.stringify(result.manifest, null, 2) },
+					...Array.from(result.files, ([path, data]) => ({ path, data })),
+				]);
+				const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
+				const filename = `inno-agent-mentes-${stamp}.zip`;
+				res.writeHead(200, {
+					"Content-Type": "application/zip",
+					"Content-Disposition": `attachment; filename="${filename}"`,
+					"Content-Length": archive.length,
+				});
+				res.end(archive);
+			} catch (err) {
+				json(res, 500, { error: `A mentés nem sikerült: ${err instanceof Error ? err.message : String(err)}` });
+			}
+			return;
+		}
+
+		// --- State backup: restore from an uploaded ZIP file ---
+		if (method === "POST" && url === "/api/backup/import") {
+			const MAX_IMPORT_BYTES = 512 * 1024 * 1024; // 512 MB
+			const declaredLength = Number(req.headers["content-length"] ?? 0);
+			if (declaredLength > MAX_IMPORT_BYTES) {
+				json(res, 413, { error: "A mentési fájl túl nagy (max. 512 MB)." });
+				return;
+			}
+			if (streamRegistry.hasActiveStreams()) {
+				json(res, 409, {
+					code: "busy",
+					error: "Egy feladat éppen fut — a visszaállítás csak annak befejezése után lehetséges.",
+				});
+				return;
+			}
+			try {
+				const body = await readRawBody(req, MAX_IMPORT_BYTES);
+				if (body.length === 0) {
+					json(res, 400, { error: "Üres fájl." });
+					return;
+				}
+				const entries = readZip(body);
+				const files = new Map<string, Buffer>();
+				let manifest: BackupManifest | null = null;
+				for (const entry of entries) {
+					if (entry.path === "manifest.json") {
+						try {
+							manifest = JSON.parse(entry.data.toString("utf-8")) as BackupManifest;
+						} catch {
+							manifest = null;
+						}
+						continue;
+					}
+					files.set(entry.path, entry.data);
+				}
+				if (!manifest || manifest.formatVersion !== BACKUP_FORMAT_VERSION) {
+					json(res, 400, { error: "A fájl nem Inno Agent mentés, vagy nem támogatott formátumú." });
+					return;
+				}
+				const result = applyBackupFiles(paths, files);
+				logger.info({ counts: result.counts, movedAside: result.movedAside }, "[backup] state restored via /api/backup/import");
+				json(res, 200, {
+					status: "restored",
+					createdAt: manifest.createdAt,
+					counts: result.counts,
+					movedAside: result.movedAside,
+					notes: result.notes,
+				});
+			} catch (err) {
+				json(res, 400, { error: `A visszaállítás nem sikerült: ${err instanceof Error ? err.message : String(err)}` });
+			}
+			return;
+		}
+
+		// --- PTE: helyi kliens + szerver-szinkron ---
+		// A belépésnek a bootstrap ELŐTT kell működnie (a csomag letöltése a
+		// friss home-ba történik, mielőtt az app bármit inicializálna).
+		if (url.startsWith("/pte/")) {
+			await ensurePteService();
+			if (!pteService) {
+				json(res, 404, { error: "pte_disabled" });
+				return;
+			}
+			try {
+				if (method === "GET" && url === "/pte/status") {
+					json(res, 200, pteService.status());
+					return;
+				}
+				if (method === "POST" && (url === "/pte/login" || url === "/pte/register")) {
+					const body = JSON.parse((await readRawBody(req, 1024 * 1024)).toString("utf-8"));
+					const user =
+						url === "/pte/login"
+							? await pteService.login(String(body.email ?? ""), String(body.password ?? ""))
+							: await pteService.register(
+									String(body.name ?? ""),
+									String(body.email ?? ""),
+									String(body.password ?? ""),
+									String(body.inviteCode ?? ""),
+								);
+					json(res, 200, { ok: true, user });
+					return;
+				}
+				if (method === "POST" && url === "/pte/sync") {
+					const result = await pteService.syncNow();
+					json(res, 200, { ok: true, ...result });
+					return;
+				}
+				if (method === "POST" && url === "/pte/logout") {
+					await pteService.logout();
+					json(res, 200, { ok: true });
+					return;
+				}
+			} catch (err) {
+				if (err instanceof PteError) {
+					json(res, err.status, { error: err.code });
+					return;
+				}
+				if (err instanceof SyntaxError) {
+					json(res, 400, { error: "invalid_json" });
+					return;
+				}
+				logger.warn({ err }, "[pte] request failed");
+				json(res, 400, { error: "internal_error" });
+				return;
+			}
+			json(res, 404, { error: "not_found" });
 			return;
 		}
 
@@ -4873,3 +5096,18 @@ server.listen(port, host, () => {
 	console.log(`[inno-server] listening on http://${host ?? "localhost"}:${port}`);
 	console.log(`[inno-server] config: ${paths.configPath}`);
 });
+
+// PTE módban a leállítás előtt utolsó szinkron (best-effort), hogy a legfrissebb
+// munka mindig a szerveren legyen. A /api/shutdown a meglévő graceful útvonal.
+let pteShutdownFlush: Promise<void> | null = null;
+function flushPteAndExit(signal: string): void {
+	if (pteShutdownFlush) return;
+	pteShutdownFlush = (pteService?.flushSync() ?? Promise.resolve()).finally(() => {
+		logger.info(`[inno-server] ${signal} — pte flush done, exiting`);
+		process.exit(0);
+	});
+	// Ha a flush 10 mp-nél tovább tartana, erőszakkal lépünk ki.
+	setTimeout(() => process.exit(0), 10_000).unref();
+}
+process.on("SIGTERM", () => flushPteAndExit("SIGTERM"));
+process.on("SIGINT", () => flushPteAndExit("SIGINT"));

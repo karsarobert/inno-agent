@@ -530,7 +530,26 @@
 			"button": "Leállítás",
 			"confirm": "Biztosan leállítod az Inno Agentet?",
 			"stopping": "Leállítás…",
-			"failed": "A leállítás nem sikerült."
+			"failed": "A leállítás nem sikerült.",
+			"confirmSave": "A „Mentés és leállítás” előbb elmenti a teljes állapotot (beszélgetések, memória, munkaterületek) a szerver exports mappájába, majd leállítja az alkalmazást. Folytatod?",
+			"saveAndStop": "Mentés és leállítás",
+			"saving": "Mentés…",
+			"savedNote": "A mentés elkészült ({{name}}). Az alkalmazás leáll.",
+			"saveFailed": "A mentés nem sikerült, de az alkalmazás leáll."
+		},
+		"backup": {
+			"title": "Állapot mentése és visszaállítása",
+			"desc": "Mindent egy fájlba ment: beszélgetéseket, memóriát, munkaterületeket és beállításokat. A mentés másik gépre vihető (pl. USB-n), és betöltéssel onnan folytathatod, ahol abbahagytad. A betöltés felülírja a jelenlegi állapotot; a régi adatok biztonsági mappába kerülnek.",
+			"export": "Mentés fájlba",
+			"exportShort": "Mentés",
+			"exportDone": "A mentés elkészült ({{name}}).",
+			"exportFailed": "A mentés nem sikerült.",
+			"import": "Betöltés fájlból",
+			"importShort": "Betöltés",
+			"importConfirm": "A betöltés felülírja a jelenlegi állapotot (beszélgetések, memória, munkaterületek). A jelenlegi adatok biztonsági mappába kerülnek. Folytatod?",
+			"importBusy": "Egy feladat éppen fut — várd meg, amíg befejeződik, majd próbáld újra.",
+			"importDone": "Sikeres visszaállítás ({{count}} fájl) — az oldal újratöltődik…",
+			"importFailed": "A betöltés nem sikerült."
 		}
 	},
 	"chat": {

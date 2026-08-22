@@ -111,10 +111,17 @@ export async function saveThemeSettings(theme: string): Promise<InnoSettings> {
 	});
 }
 
+export interface ShutdownResult {
+	status: string;
+	/** Absolute path of the state backup written before exit (when requested). */
+	savedBackup?: string | null;
+}
+
 /** Ask the backend to shut down gracefully (stops the whole app/server). */
-export async function shutdownServer(): Promise<void> {
-	await apiFetch<{ status: string }>("/api/shutdown", {
+export async function shutdownServer(options: { saveBeforeExit?: boolean } = {}): Promise<ShutdownResult> {
+	return apiFetch<ShutdownResult>("/api/shutdown", {
 		method: "POST",
+		body: JSON.stringify(options),
 	});
 }
 

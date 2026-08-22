@@ -530,7 +530,26 @@
 			"button": "Shut down",
 			"confirm": "Are you sure you want to shut down Inno Agent?",
 			"stopping": "Shutting down…",
-			"failed": "Shutdown failed."
+			"failed": "Shutdown failed.",
+			"confirmSave": "\"Save & shutdown\" first saves the full state (conversations, memory, workspaces) to the server's exports folder, then stops the app. Continue?",
+			"saveAndStop": "Save & shutdown",
+			"saving": "Saving…",
+			"savedNote": "Backup saved ({{name}}). The app is stopping.",
+			"saveFailed": "The backup failed, but the app is stopping."
+		},
+		"backup": {
+			"title": "Save & restore state",
+			"desc": "Save everything — conversations, memory, workspaces and settings — into a single file. The file can be carried to another machine (e.g. on a USB stick) and restored to continue where you left off. Restoring overwrites the current state; the old data is moved to a safety folder.",
+			"export": "Save to file",
+			"exportShort": "Save",
+			"exportDone": "Backup saved ({{name}}).",
+			"exportFailed": "Backup failed.",
+			"import": "Restore from file",
+			"importShort": "Load",
+			"importConfirm": "Restoring overwrites the current state (conversations, memory, workspaces). The current data is moved to a safety folder. Continue?",
+			"importBusy": "A task is currently running — wait for it to finish, then try again.",
+			"importDone": "Restore successful ({{count}} files) — reloading…",
+			"importFailed": "Restore failed."
 		}
 	},
 	"chat": {

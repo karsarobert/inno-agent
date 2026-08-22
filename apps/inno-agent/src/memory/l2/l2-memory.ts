@@ -47,6 +47,19 @@ export class L2Memory {
 		return this.l2DataDir;
 	}
 
+	/** Close the underlying index store (if open) and forget it. */
+	close(): void {
+		if (this.opened && this.store) {
+			try {
+				this.store.close();
+			} catch (err) {
+				logger.warn({ err }, `[L2] store close failed: ${err instanceof Error ? err.message : String(err)}`);
+			}
+		}
+		this.opened = false;
+		this.store = null;
+	}
+
 	/**
 	 * One-time backfill of all existing wiki pages (cheap: skips unchanged
 	 * files). Index sync always runs — even when L2 is disabled — so the
@@ -131,4 +144,21 @@ export function getL2Memory(l2DataDir: string): L2Memory {
 		registry.set(l2DataDir, mem);
 	}
 	return mem;
+}
+
+/**
+ * Close and drop the per-dir singleton so the next call reopens the index from
+ * disk. Used by state restore, which replaces index.db under the running
+ * server — without this the open handle would keep pointing at the old file.
+ */
+export function resetL2Memory(l2DataDir: string): void {
+	const mem = registry.get(l2DataDir);
+	if (mem) {
+		try {
+			mem.close();
+		} catch (err) {
+			logger.warn({ err }, `[L2] close during reset failed: ${err instanceof Error ? err.message : String(err)}`);
+		}
+		registry.delete(l2DataDir);
+	}
 }
