@@ -924,6 +924,10 @@ export function SessionSidebar({ collapsed }: SessionSidebarProps) {
 
 				{/* Footer: new chat (mode switch lives on the IA logo above) */}
 				<div className="border-t border-[var(--inno-border)] p-2">
+					{/* Save / restore state — students live in Simple Mode, so the
+					    backup buttons must be here too, not only in the expanded
+					    sidebar. */}
+					<BackupPanel compact />
 					<button
 						className="inno-sidebar-text inno-new-chat-button flex w-full items-center justify-center gap-2 rounded-lg inno-primary-button px-3 py-1.5 font-medium text-white shadow-sm transition-colors"
 						onClick={newChat}
