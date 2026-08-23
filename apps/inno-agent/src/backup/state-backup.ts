@@ -35,6 +35,7 @@ import { fileURLToPath } from "node:url";
 import type { RuntimePaths } from "../runtime.js";
 import { ensureDir, readJson } from "../storage/file-store.js";
 import { resetL2Memory } from "../memory/l2/l2-memory.js";
+import { closeAllL3Stores } from "../memory/l3/l3-tools.js";
 import { logger } from "../logger.js";
 
 export const BACKUP_FORMAT_VERSION = 1;
@@ -304,8 +305,12 @@ function mapArchivePath(paths: RuntimePaths, key: string): string | null {
 export function applyBackupFiles(paths: RuntimePaths, files: Map<string, Buffer>): RestoreResult {
 	const notes: string[] = [];
 
-	// Close the L2 singleton so the next access reopens the restored index.
+	// Close the L2/L3 singletons so the next access reopens the restored
+	// stores. Releasing the L3 handle is REQUIRED on Windows: its open
+	// memory.db-wal would otherwise be locked, and deleting the stale sidecar
+	// during restore would abort the whole import with EPERM.
 	resetL2Memory(paths.l2DataDir);
+	closeAllL3Stores();
 
 	const trashDir = join(paths.dataDir, ".restore-trash", `restore-${Date.now()}`);
 	ensureDir(trashDir);
@@ -356,9 +361,20 @@ export function applyBackupFiles(paths: RuntimePaths, files: Map<string, Buffer>
 	}
 
 	// 4. Drop stale WAL/SHM sidecars — the restored snapshot is authoritative.
+	// Best-effort: a lingering OS lock (antivirus, transient handle) must not
+	// abort the whole restore; a leftover sidecar is surfaced as a note.
 	for (const db of sqliteFiles) {
-		rmSync(`${db}-wal`, { force: true });
-		rmSync(`${db}-shm`, { force: true });
+		for (const suffix of ["-wal", "-shm"]) {
+			try {
+				rmSync(`${db}${suffix}`, { force: true });
+			} catch (err) {
+				notes.push(
+					`Nem sikerült törölni a régi ${suffix.slice(1)} oldalfájlt (${db}): ${
+						err instanceof Error ? err.message : String(err)
+					}`,
+				);
+			}
+		}
 	}
 
 	logger.info(

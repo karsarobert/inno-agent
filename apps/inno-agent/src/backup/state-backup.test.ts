@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { RuntimePaths } from "../runtime.js";
 import { applyBackupFiles, BACKUP_FORMAT_VERSION, collectBackupFiles } from "./state-backup.js";
+import { L3Memory } from "../memory/l3/l3-tools.js";
 import { writeZip, readZip } from "./zip.js";
 
 const testRoots: string[] = [];
@@ -200,5 +201,46 @@ describe("applyBackupFiles", () => {
 		expect(existsSync(join(dstPaths.workspaceDir, ".pub", "masik_diak.cpp"))).toBe(false);
 		// And the old session file is gone from the live dir (in the trash).
 		expect(existsSync(join(dstPaths.sessionDir, "masik_session.jsonl"))).toBe(false);
+	});
+
+	it("restore releases the open L3 store and cleans its sidecars", async () => {
+		const src = mkdtempSync(join(tmpdir(), "inno-backup-l3src-"));
+		const dst = mkdtempSync(join(tmpdir(), "inno-backup-l3dst-"));
+		testRoots.push(src, dst);
+		const srcPaths = makePaths(src);
+		const dstPaths = makePaths(dst);
+
+		// Source: an L3 store that has actually indexed a session (WAL on).
+		write(srcPaths.sessionDir, "s1.jsonl", '{"type":"message","timestamp":"2026-08-23T10:00:00.000Z","message":{"role":"user","content":"Fontos emlék a diszkrét matematikából"}}\n');
+		const srcMemory = new L3Memory(srcPaths.l3DataDir, srcPaths.sessionDir);
+		await srcMemory.backfill();
+		expect(existsSync(join(srcPaths.l3DataDir, "memory.db"))).toBe(true);
+
+		const { files, manifest } = await collectBackupFiles(srcPaths);
+		expect(files.has("l3/memory.db")).toBe(true);
+		const archive = writeZip([
+			{ path: "manifest.json", data: JSON.stringify(manifest) },
+			...Array.from(files, ([path, data]) => ({ path, data })),
+		]);
+
+		// Target: its own L3 store OPEN, exactly like a running server that
+		// has already exercised cross-conversation recall.
+		write(dstPaths.sessionDir, "masik.jsonl", '{"type":"message","timestamp":"2026-08-23T09:00:00.000Z","message":{"role":"user","content":"Másik gép egyik emléke"}}\n');
+		const dstMemory = new L3Memory(dstPaths.l3DataDir, dstPaths.sessionDir);
+		await dstMemory.backfill();
+		const walPath = join(dstPaths.l3DataDir, "memory.db-wal");
+		expect(existsSync(walPath)).toBe(true);
+
+		const result = applyBackupFiles(dstPaths, new Map(readZip(archive).map((e) => [e.path, e.data])));
+
+		expect(result.counts.l3).toBe(1);
+		expect(existsSync(join(dstPaths.l3DataDir, "memory.db"))).toBe(true);
+		// The target's open store was closed and its stale sidecar removed —
+		// on Windows the locked -wal would otherwise abort the import (EPERM).
+		expect(existsSync(walPath)).toBe(false);
+		expect((dstMemory as unknown as { opened: boolean }).opened).toBe(false);
+		// The next use reopens the restored database without error.
+		await dstMemory.backfill();
+		expect((dstMemory as unknown as { opened: boolean }).opened).toBe(true);
 	});
 });

@@ -32,7 +32,9 @@ export class L3Memory {
 	constructor(
 		private readonly l3DataDir: string,
 		private readonly sessionDir: string,
-	) {}
+	) {
+		openL3Memories.add(this);
+	}
 
 	private async ensureStore(): Promise<L3Store | null> {
 		if (this.opened) return this.store;
@@ -75,6 +77,39 @@ export class L3Memory {
 		const store = await this.ensureStore();
 		if (!store) return [];
 		return recall(store, query, { excludeSessionId });
+	}
+
+	/**
+	 * Close the underlying store (if open) and forget it; the next use
+	 * reopens the (possibly restored) database. Releasing the handle is
+	 * required before a backup restore: on Windows the open memory.db-wal is
+	 * locked and its deletion would fail with EPERM.
+	 */
+	close(): void {
+		if (this.store) {
+			try {
+				this.store.close();
+			} catch (err) {
+				logger.warn({ err }, `[L3] close failed: ${err instanceof Error ? err.message : String(err)}`);
+			}
+			this.store = null;
+		}
+		this.opened = false;
+		this.backfilled = false;
+	}
+}
+
+/** Live L3Memory instances (self-registered) so a state restore can release them. */
+const openL3Memories = new Set<L3Memory>();
+
+/**
+ * Close every open L3 store. Called before a backup restore: the SQLite
+ * handles (and their -wal/-shm sidecars) must be released first — on Windows
+ * deleting a locked memory.db-wal fails with EPERM and would abort the import.
+ */
+export function closeAllL3Stores(): void {
+	for (const m of openL3Memories) {
+		m.close();
 	}
 }
 
