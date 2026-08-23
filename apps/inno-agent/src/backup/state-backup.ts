@@ -6,7 +6,9 @@
  *   - config/settings.json, config/skills.json     (user preferences)
  *   - learner/*                                    (learner profile + events)
  *   - sessions/*.jsonl + workspaces.json           (conversations + bindings)
- *   - l3/memory.db, l2/index.db                    (long-term memory, wiki index)
+ *   - l3/memory.db, l2/*                           (long-term memory + the full
+ *     L2 knowledge base: wiki pages — the notebook —, source manifest, raw
+ *     uploads, extracted text, and the search index)
  *   - workspaces/registry.json, jobs/jobs.json, runs/**
  *   - workspace/**                                 (all student files)
  *
@@ -211,6 +213,18 @@ export async function collectBackupFiles(paths: RuntimePaths, opts: { maxBytes?:
 	const l2 = await snapshotSqlite(join(paths.l2DataDir, "index.db"));
 	if (l2) add("l2", "index.db", l2);
 
+	// --- L2 knowledge base content (the notebook) ---
+	// The wiki pages the agent writes, the source manifest, uploaded raw
+	// documents and their extracted text are all student content and must
+	// survive export/import. The live index.db (and its WAL/SHM sidecars) is
+	// NOT walked — index.db is snapshotted consistently above, and a copy of
+	// the mid-write database would be useless anyway.
+	walkDir(
+		paths.l2DataDir,
+		(rel) => addFileIfExists("l2", join(paths.l2DataDir, rel), rel),
+		{ excludedNames: new Set(["index.db", "index.db-wal", "index.db-shm"]) },
+	);
+
 	// --- workspace registry ---
 	addFileIfExists("workspaces", join(paths.dataDir, "workspaces", "registry.json"), "registry.json");
 
@@ -258,7 +272,12 @@ function mapArchivePath(paths: RuntimePaths, key: string): string | null {
 		case "l3":
 			return rest === "memory.db" ? join(paths.l3DataDir, rest) : null;
 		case "l2":
-			return rest === "index.db" ? join(paths.l2DataDir, rest) : null;
+			if (rest === "index.db" || rest === "manifest.jsonl") return join(paths.l2DataDir, rest);
+			// The notebook itself: wiki pages, uploaded sources, extracted text.
+			if (rest.startsWith("wiki/") || rest.startsWith("raw/") || rest.startsWith("extracted/")) {
+				return join(paths.l2DataDir, rest);
+			}
+			return null;
 		case "workspaces":
 			return rest === "registry.json" ? join(paths.dataDir, "workspaces", rest) : null;
 		case "jobs":
