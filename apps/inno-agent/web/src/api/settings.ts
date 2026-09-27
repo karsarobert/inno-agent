@@ -133,7 +133,7 @@ export async function saveWebAccessSettings(payload: WebAccessSettingsPayload): 
 }
 
 export interface ContentHubPayload {
-	type: "github" | "bundle";
+	type: "github" | "bundle" | "none";
 	owner?: string;
 	repo?: string;
 	ref?: string;
