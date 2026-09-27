@@ -1615,6 +1615,15 @@ const server = createServer(async (req, res) => {
 		if (await handleBackupRoutes(req, res, method, url, {
 			paths,
 			hasActiveStreams: () => streamRegistry.hasActiveStreams(),
+			// Answer first (the route already did), then close the listener and
+			// exit; force-exit if open connections keep the server alive.
+			requestShutdown: () => {
+				setTimeout(() => {
+					logger.info("shutdown requested via /api/shutdown");
+					server.close(() => process.exit(0));
+					setTimeout(() => process.exit(0), 1500).unref();
+				}, 100);
+			},
 		})) return;
 
 		// --- Slash commands API (extracted to server/routes/commands.ts) ---
