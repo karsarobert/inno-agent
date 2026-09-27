@@ -8,6 +8,8 @@ import { json } from "../http-helpers.js";
 export interface PresetsRouteContext {
 	paths: RuntimePaths;
 	listPresetLibrary: (forceRefresh?: boolean) => Promise<PresetMeta[]>;
+	/** True when contentHub type is "none": no preset cards at all, not even the bundled ones. */
+	isContentHubDisabled: () => boolean;
 }
 
 /**
@@ -22,11 +24,18 @@ export async function handlePresetsRoutes(
 	url: string,
 	ctx: PresetsRouteContext,
 ): Promise<boolean> {
-	const { paths, listPresetLibrary } = ctx;
+	const { paths, listPresetLibrary, isContentHubDisabled } = ctx;
 
 	// --- Presets API (ready-to-use workspace templates) ---
 	// Local cache listing (offline fallback / already-downloaded presets).
 	if (method === "GET" && url === "/api/presets") {
+		// With the hub disabled (type "none") there are no preset cards at all —
+		// not even the bundled fallback presets (ppt-creation, lesson-plan,
+		// scenario-explain), which are still shipped with the app.
+		if (isContentHubDisabled()) {
+			json(res, 200, []);
+			return true;
+		}
 		json(res, 200, listPresets(paths));
 		return true;
 	}
@@ -36,6 +45,12 @@ export async function handlePresetsRoutes(
 	// always appear; an explicit refresh surfaces errors to the client so it can
 	// keep the previous list and explain what happened.
 	if (method === "GET" && url.split("?")[0] === "/api/preset-library") {
+		// Disabled hub (type "none") must stay card-free: neither the remote
+		// catalog nor the bundled fallback presets are served.
+		if (isContentHubDisabled()) {
+			json(res, 200, []);
+			return true;
+		}
 		const forceRefresh = new URL(url, "http://localhost").searchParams.get("refresh") === "1";
 		try {
 			// listPresetLibrary already merges bundled presets with the

@@ -1587,7 +1587,13 @@ const server = createServer(async (req, res) => {
 		})) return;
 
 		// --- Presets API (extracted to server/routes/presets.ts) ---
-		if (await handlePresetsRoutes(req, res, method, url, { paths, listPresetLibrary })) return;
+		if (await handlePresetsRoutes(req, res, method, url, {
+			paths,
+			listPresetLibrary,
+			// Read the live config: the hub can be switched to "none" at runtime
+			// from the settings UI without a restart.
+			isContentHubDisabled: () => config.contentHub?.type === "none",
+		})) return;
 
 		// --- Terminal sessions + Runs (extracted to server/routes/practice.ts) ---
 		if (await handlePracticeRoutes(req, res, method, url, {
