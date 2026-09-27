@@ -48,6 +48,7 @@ import { handleChannelsRoutes } from "./server/routes/channels.js";
 import { handleJobsRoutes } from "./server/routes/jobs.js";
 import { handleCheckInsRoutes } from "./server/routes/checkins.js";
 import { handleSettingsRoutes } from "./server/routes/settings.js";
+import { handleBackupRoutes } from "./server/routes/backup.js";
 import { handleSkillsRoutes } from "./server/routes/skills.js";
 import { handleWorkspacesRoutes } from "./server/routes/workspaces.js";
 import { handleSessionsRoutes } from "./server/routes/sessions.js";
@@ -1608,6 +1609,12 @@ const server = createServer(async (req, res) => {
 			reloadFeishuChannel,
 			scheduleSkillsReload,
 			invalidateContentSource,
+		})) return;
+
+		// --- State backup / restore API (extracted to server/routes/backup.ts) ---
+		if (await handleBackupRoutes(req, res, method, url, {
+			paths,
+			hasActiveStreams: () => streamRegistry.hasActiveStreams(),
 		})) return;
 
 		// --- Slash commands API (extracted to server/routes/commands.ts) ---
