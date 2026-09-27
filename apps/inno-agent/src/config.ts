@@ -196,9 +196,9 @@ export interface InnoContentHubConfig {
 /** Built-in defaults — the public hub the app shipped with. */
 export const DEFAULT_CONTENT_HUB: InnoContentHubConfig = {
 	type: "github",
-	owner: "Chloris-Blaxk",
+	owner: "karsarobert",
 	repo: "inno-agent-hub",
-	ref: "main",
+	ref: "stable",
 	skillsPath: "skill-library",
 	presetsPath: "workspace-templates",
 	baseUrl: "",
